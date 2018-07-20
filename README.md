@@ -3,7 +3,7 @@ A simple SAT solver implemented in Haskell.
 
 ## Usage
 
-The function `sat` takes an string representing a formula in CNF and returns an interpretation that satisfies it, if there is.
+The function `sat` takes an string representing a formula in CNF and returns an interpretation that satisfies it, if there exists.
 
 ```haskell
 sat :: String -> Maybe Interpretation
