@@ -1,20 +1,11 @@
 import Data.List(nub)
 import Data.Maybe(fromJust)
 
-data Literal = Pos Char | Neg Char deriving (Show, Eq)
+data Literal = Pos { getVariable :: Char } | Neg { getVariable :: Char } deriving (Show, Eq)
 type Variable = Char
 type Clause = [Literal]
 type Formula = [Clause]
 type Interpretation = [(Variable,Bool)]
-
--- Get variable from a literal
-getVariable :: Literal -> Variable
-getVariable (Pos x) = x
-getVariable (Neg x) = x
-
--- Get variables from a Formula
-getVariables :: Formula -> [Variable]
-getVariables = nub . map getVariable . concat
 
 -- String to formula
 readCNF :: String -> Formula
@@ -25,16 +16,17 @@ readCNF = map f . words
 
 -- Check satisfiability of a formula in CNF
 sat :: String -> Maybe Interpretation
-sat p = dpll (getVariables f) f []
-    where f = simplifyFormula $ readCNF p
+sat = (`dpll` []) . simplifyFormula . readCNF
 
 -- DPLL algorithm
-dpll :: [Variable] -> Formula -> Interpretation -> Maybe Interpretation
-dpll _ [] sub = Just sub
-dpll [] _ sub = Nothing
-dpll (x:xs) p sub = let true = dpll xs (applyFormula (x,True) p) ((x,True):sub)
-                    in if true /= Nothing then true
-                       else dpll xs (applyFormula (x,False) p) ((x,False):sub)
+dpll :: Formula -> Interpretation -> Maybe Interpretation
+dpll [] i = Just i
+dpll ([]:_) _ = Nothing
+dpll f@((x:y):z) i = let
+                         var = getVariable x
+                         true = dpll (applyFormula (var,True) f) ((var,True):i)
+                     in if true /= Nothing then true
+                        else dpll (applyFormula (var,False) f) ((var,False):i)
 
 -- Apply link to a formula
 applyFormula :: (Variable,Bool) -> Formula -> Formula
@@ -56,6 +48,3 @@ simplifyClause = f [] . nub
     where f p [] = p
           f p (Pos x:ls) = if elem (Neg x) ls then [] else f (Pos x:p) ls
           f p (Neg x:ls) = if elem (Pos x) ls then [] else f (Neg x:p) ls
-
-
-
