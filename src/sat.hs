@@ -1,13 +1,25 @@
-import Data.List(nub)
-import Data.Maybe(fromJust)
+module SAT(sat) where
 
-data Literal = Pos { getVariable :: Char } | Neg { getVariable :: Char } deriving (Show, Eq)
+import Data.List(nub)
+import Data.Maybe(fromJust, isJust)
+
+data Literal = Neg { getVariable :: Char } | Pos { getVariable :: Char } deriving (Show, Ord, Eq)
 type Variable = Char
 type Clause = [Literal]
 type Formula = [Clause]
 type Interpretation = [(Variable,Bool)]
 
--- String to formula
+-- Sign of a literal
+sign :: Literal -> Bool
+sign (Pos _) = True
+sign (Neg _) = False
+
+-- Complementary of a literal
+complementary :: Literal -> Literal
+complementary (Pos x) = Neg x
+complementary (Neg x) = Pos x
+
+-- String to formula in CNF
 readCNF :: String -> Formula
 readCNF = map f . words
     where f (x:'\'':xs) = Neg x : f xs
@@ -22,29 +34,28 @@ sat = (`dpll` []) . simplifyFormula . readCNF
 dpll :: Formula -> Interpretation -> Maybe Interpretation
 dpll [] i = Just i
 dpll ([]:_) _ = Nothing
-dpll f@((x:y):z) i = let
-                         var = getVariable x
-                         true = dpll (applyFormula (var,True) f) ((var,True):i)
-                     in if true /= Nothing then true
-                        else dpll (applyFormula (var,False) f) ((var,False):i)
+dpll f@((x:y):z) i = let var = getVariable x
+                         mi = dpll (applyFormula (var,True) f) ((var,True):i)
+                      in if isJust mi then mi
+                         else dpll (applyFormula (var,False) f) ((var,False):i)
 
--- Apply link to a formula
+-- Replace variable with a value in a formula
 applyFormula :: (Variable,Bool) -> Formula -> Formula
-applyFormula s = map fromJust . filter (/= Nothing) . map (applyClause s [])
+applyFormula s = map fromJust . filter isJust . map (applyClause s [])
 
--- Apply link to a clause
+-- Replace variable with a value in a clause
 applyClause :: (Variable,Bool) -> Clause -> Clause -> Maybe Clause
 applyClause _ p [] = Just p
-applyClause (x,b) p (Pos l:ls) = if x == l then if b then Nothing else Just (p ++ ls) else applyClause (x,b) (Pos l:p) ls
-applyClause (x,b) p (Neg l:ls) = if x == l then if b then Just (p ++ ls) else Nothing else applyClause (x,b) (Neg l:p) ls
+applyClause (x,b) f (l:ls) = if x == getVariable l
+                             then if b == sign l then Nothing else Just (f ++ ls)
+                             else applyClause (x,b) (l:f) ls
 
 -- Simplify a formula
 simplifyFormula :: Formula -> Formula
-simplifyFormula = nub . filter (/= []) . map simplifyClause
+simplifyFormula = nub . filter (not . null) . map simplifyClause
 
 -- Simplify a clause
 simplifyClause :: Clause -> Clause
 simplifyClause = f [] . nub
     where f p [] = p
-          f p (Pos x:ls) = if elem (Neg x) ls then [] else f (Pos x:p) ls
-          f p (Neg x:ls) = if elem (Pos x) ls then [] else f (Neg x:p) ls
+          f p (l:ls) = if elem (complementary l) ls then [] else f (l:p) ls
