@@ -26,7 +26,7 @@ typedef struct LiteralNode {
 } LiteralNode;
 
 /** Data structure for clauses */
-typedef struct {
+typedef struct Clause {
 	Literal *arr_literals;        // Array of literals
     LiteralNode *lst_literals;    // Linked-list of literals
     int length;                   // Number of literals in the list
@@ -40,18 +40,18 @@ typedef struct ClauseNode {
 } ClauseNode;
 
 /** Data structure for formulae */
-typedef struct {
+typedef struct Formula {
     ClauseNode *clauses;          // Linked-list of clauses
     int length;                   // Number of clauses in the list
     int variables;                // Number of unique variables
     int *count_positives;         // Number of positive literals of each variable
     int *count_negatives;         // Number of negative literals of each variable
-    ClauseNode *unitaries;        // Clauses with a one literal;
+    ClauseNode *unitaries;        // Clauses with a one literal
     ClauseNode **occurrences;     // Clauses where occurs each variable
 } Formula;
 
 /** Data structure for interpretations */
-typedef struct {
+typedef struct Interpretation {
     int *bindings;                // Values
     int length;                   // Number of bindings
 } Interpretation;
@@ -71,6 +71,10 @@ typedef struct Action {
 /** Check satisfiability of a formula */
 int check_sat(Formula *F, Interpretation *I);
 /** 1-Literal rule (unit propagation) */
-void unit_propagation(Formula *F, Interpretation *I);
+void unit_propagation(Formula *F, Interpretation *I, Action *actions);
 /** Positive-Negative rule */
-void positive_negative(Formula *F, Interpretation *I);
+void positive_negative(Formula *F, Interpretation *I, Action *actions);
+/** Remove a clause from a formula */
+void remove_clause(Formula *F, Clause *clause, Action *actions);
+/** Remove a literal from a clause */
+void remove_literal(Formula *F, Clause *clause, Literal literal, Action *actions);
