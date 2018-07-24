@@ -34,7 +34,7 @@ typedef struct Clause {
 	int id;                       // Auto-increment identifier
 	Literal *arr_literals;        // Array of literals
     LiteralNode *lst_literals;    // Linked-list of literals
-    int *dropped_literals;        // Dropped literals
+    //int *dropped_literals;        // Dropped literals
     int length;                   // Number of literals in the list
 } Clause;
 

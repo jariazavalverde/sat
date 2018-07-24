@@ -76,7 +76,7 @@ void remove_clause(Formula *F, Clause *clause, Atom atom, Action *actions) {
 void remove_literal(Formula *F, Clause *clause, Atom atom, Action *actions) {
     Literal literal;
     // Set literal as dropped
-    clause->dropped_literals[atom] = 1;
+    //clause->dropped_literals[atom] = 1;
     clause->length--;
     // Update count of positive-negative literals
     literal = clause->arr_literals[atom];
