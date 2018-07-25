@@ -17,12 +17,18 @@
 
 int main(int argc, char **argv) {
 	Formula F;
+	Interpretation I;
 	int read;
-	read = dimacs_read_file("../../examples/in/c2.cnf", &F);
+	if(argc < 2)
+		return 1;
+	read = dimacs_read_file(argv[1], &F);
 	if(read == 0) {
 		write_formula(&F);
 		printf("\nNumber of clauses: %d\n", F.length);
 		printf("Number of variables: %d\n", F.variables);
+		check_sat(&F, &I);
+		write_formula(&F);
+		printf("\n");
 	} else {
 		printf("error %d\n", read);
 	}

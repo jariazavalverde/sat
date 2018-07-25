@@ -13,11 +13,11 @@
 
 /** Check satisfiability of a formula */
 int check_sat(Formula *F, Interpretation *I) {
-    Action *actions;
+    Action actions = {NULL, 0};
     // 1-literal rule
-    unit_propagation(F, I, actions);
+    unit_propagation(F, I, &actions);
     // positive-negative rule
-    positive_negative(F, I, actions);
+    positive_negative(F, I, &actions);
     // split
     return 0;
 }
@@ -31,14 +31,14 @@ void unit_propagation(Formula *F, Interpretation *I, Action *actions) {
     ClauseNode *unit_node, *occurs_node;
     unit_node = F->unitaries;
     // Iterate unitary clauses
-    while(unit_node) {
+    while(unit_node != NULL) {
         clause = unit_node->clause;
         literal_node = clause->lst_literals;
         atom = literal_node->atom;
         literal = literal_node->literal;
         occurs_node = F->occurrences[atom];
         // Iterate clauses containing the literal
-        while(occurs_node) {
+        while(occurs_node != NULL) {
             clause = occurs_node->clause;
             // If same sign of literal, remove clause
             if(clause->arr_literals[atom] == literal) {
@@ -107,7 +107,7 @@ void update_count_positive_negative(Formula *F, Clause *clause, Operation op) {
 
 /** Prepend a new action */
 void push_action(Atom atom, Clause *clause, Literal literal, Action *actions) {
-    struct ActionNode *action;
+    ActionNode *action;
     action = malloc(sizeof(ActionNode));
     action->step = atom;
     action->clause = clause;
