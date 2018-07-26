@@ -13,6 +13,8 @@
 
 /** Check satisfiability of a formula */
 int check_sat(Formula *F, Interpretation *I);
+/** Propagate a value of a variable */
+void replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, Bool value);
 /** 1-Literal rule (unit propagation) */
 void unit_propagation(Formula *F, Interpretation *I, Action *actions);
 /** Positive-Negative rule */

@@ -26,35 +26,37 @@ int check_sat(Formula *F, Interpretation *I) {
     return 0;
 }
 
+/** Propagate a value of a variable */
+void replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, Bool value) {
+	Literal literal;
+	Clause *clause;
+	ClauseNode *node = F->occurrences[atom];
+	// Assign interpretation
+	I->bindings[atom] = value;
+	// Iterate clauses containing the literal
+	while(node != NULL) {
+		clause = node->clause;
+		literal = clause->arr_literals[atom]->literal;
+		// If same sign of literal, remove clause
+		if(literal == NEGATIVE && value == FALSE || literal == POSITIVE && value == TRUE) {
+			remove_clause(F, clause, atom, actions);
+		// else, remove the literal from the clause
+		} else {
+			remove_literal(F, clause, atom, actions);
+		}
+		// Update node
+		node = node->next;
+	}
+}
+
 /** 1-Literal rule (unit propagation) */
 void unit_propagation(Formula *F, Interpretation *I, Action *actions) {
-    Atom atom;
-    Literal literal;
-    Clause *clause;
     LiteralNode *literal_node;
-    ClauseNode *occurs_node;
     // Iterate unitary clauses
     while(F->unitaries != NULL) {
-        clause = F->unitaries->clause;
-        literal_node = clause->lst_literals;
-        atom = literal_node->atom;
-        literal = literal_node->literal;
-        occurs_node = F->occurrences[atom];
-        // Assign interpretation
-        I->bindings[atom] = literal == NEGATIVE ? FALSE : TRUE;
-        // Iterate clauses containing the literal
-        while(occurs_node != NULL) {
-            clause = occurs_node->clause;
-            // If same sign of literal, remove clause
-            if(clause->arr_literals[atom]->literal == literal) {
-                remove_clause(F, clause, atom, actions);
-            // else, remove the literal from the clause
-            } else {
-                remove_literal(F, clause, atom, actions);
-            }
-            // Update node
-            occurs_node = occurs_node->next;
-        }
+        literal_node = F->unitaries->clause->lst_literals;
+        // Replace variable
+        replace_variable(F, I, actions, literal_node->atom, literal_node->literal == NEGATIVE ? FALSE : TRUE);
         // Update unitary nodes
         F->unitaries = F->unitaries->next;
     }
@@ -62,7 +64,16 @@ void unit_propagation(Formula *F, Interpretation *I, Action *actions) {
 
 /** Positive-Negative rule */
 void positive_negative(Formula *F, Interpretation *I, Action *actions) {
-    
+    int i;
+    // Iterate variables
+    for(i = 0; i < F->variables; i++) {
+	    // If variable is positive
+	    if(F->count_positives[i] > 0 && F->count_negatives[i] == 0)
+		    replace_variable(F, I, actions, i, TRUE);
+		// If variable is negative
+		else if(F->count_negatives[i] > 0 && F->count_positives[i] == 0)
+		    replace_variable(F, I, actions, i, FALSE);
+	}
 }
 
 /** Remove a clause from a formula */
