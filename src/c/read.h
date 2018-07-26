@@ -3,7 +3,7 @@
  * FILENAME: read.h
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 23.07.2018
+ * DATE: 26.07.2018
  * 
  *H*/
 
@@ -19,3 +19,5 @@ int dimacs_read_file(char *path, Formula *F);
 void write_formula(Formula *F);
 /** Write a literal for the stardard output */
 void write_literal(Atom atom, Literal literal);
+/** Write a interpretation */
+void write_interpretation(Interpretation *I);

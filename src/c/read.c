@@ -3,7 +3,7 @@
  * FILENAME: read.c
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 23.07.2018
+ * DATE: 26.07.2018
  * 
  *H*/
 
@@ -46,6 +46,7 @@ int dimacs_read_file(char *path, Formula *F) {
     F->count_negatives = malloc(nbvar*sizeof(int));
     F->sat_clauses = malloc(nbvar*sizeof(int));
     F->occurrences = malloc(nbvar*sizeof(ClauseNode*));
+    F->arr_clauses = malloc(nbclauses*sizeof(ClauseNode*));
     for(i = 0; i < nbvar; i++) {
         F->count_positives[i] = 0;
         F->count_negatives[i] = 0;
@@ -53,18 +54,18 @@ int dimacs_read_file(char *path, Formula *F) {
         F->occurrences[i] = NULL;
     }
     // Read clauses
-    for(i = 0; i < nbclauses; ++i) {
+    for(i = 0; i < nbclauses; i++) {
         length = 0;
         last_clause_node = clause_node;
         clause = malloc(sizeof(Clause));
-        clause->arr_literals = malloc(nbvar*sizeof(Literal));
+        clause->arr_literals = malloc(nbvar*sizeof(LiteralNode*));
         clause_node = malloc(sizeof(ClauseNode));
         clause->id = i;
         clause->lst_literals = NULL;
         literal_node = NULL;
-        for(j = 0; j < nbvar; j++) {
-            clause->arr_literals[j] = NONE;
-        }
+        F->arr_clauses[i] = clause_node;
+        for(j = 0; j < nbvar; j++)
+            clause->arr_literals[j] = NULL;
         if(F->lst_clauses == NULL)
             F->lst_clauses = clause_node;
         while(fscanf(file, "%d", &var) == 1 && var != 0) {
@@ -78,6 +79,7 @@ int dimacs_read_file(char *path, Formula *F) {
                 F->count_positives[atom]++;
             last_literal_node = literal_node;
             literal_node = malloc(sizeof(LiteralNode));
+            clause->arr_literals[atom] = literal_node;
             literal_node->atom = atom; 
             literal_node->literal = literal;
             literal_node->next = NULL;
@@ -86,7 +88,6 @@ int dimacs_read_file(char *path, Formula *F) {
                 clause->lst_literals = literal_node;
             if(last_literal_node != NULL)
                 last_literal_node->next = literal_node;
-            clause->arr_literals[atom] = literal;
             // Occurrence
             occurrence = malloc(sizeof(ClauseNode));
             occurrence->clause = clause;
@@ -141,3 +142,13 @@ void write_literal(Atom atom, Literal literal) {
     printf(literal == NEGATIVE ? "-%d " : "%d ", atom+1);
 }
 
+/** Write a interpretation */
+void write_interpretation(Interpretation *I) {
+    int i;
+    Bool value;
+    for(i = 0; i < I->length; i++) {
+        value = I->bindings[i];
+        if(value != UNKNOWN)
+            printf(" %d:%s ", i+1, value == FALSE ? "false" : "true");
+    }
+}

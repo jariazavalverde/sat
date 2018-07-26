@@ -3,9 +3,15 @@
  * FILENAME: structures.h
  * DESCRIPTION: Data structures for SAT problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 23.07.2018
+ * DATE: 26.07.2018
  * 
  *H*/
+
+
+
+#include <stdlib.h>
+
+
 
 #ifndef SAT_STRUCTURES_H
 #define SAT_STRUCTURES_H
@@ -17,6 +23,9 @@ typedef int Atom;
 
 /** Possible states of literals */
 typedef enum {NONE, NEGATIVE, POSITIVE, BOTH} Literal;
+
+/** Boolean values */
+typedef enum {UNKNOWN = -1, FALSE = 0, TRUE = 1} Bool;
 
 /** Possible operations */
 typedef enum {REMOVE, ADD} Operation;
@@ -32,9 +41,8 @@ typedef struct LiteralNode {
 /** Data structure for clauses */
 typedef struct Clause {
 	int id;                       // Auto-increment identifier
-	Literal *arr_literals;        // Array of literals
+	LiteralNode **arr_literals;   // Array of literals
     LiteralNode *lst_literals;    // Linked-list of literals
-    //int *dropped_literals;        // Dropped literals
     int length;                   // Number of literals in the list
 } Clause;
 
@@ -47,7 +55,7 @@ typedef struct ClauseNode {
 
 /** Data structure for formulas */
 typedef struct Formula {
-    Clause *arr_clauses;          // Array of clauses
+    ClauseNode **arr_clauses;     // Array of clauses
     ClauseNode *lst_clauses;      // Linked-list of clauses
     int length;                   // Number of clauses in the list
     int variables;                // Number of unique variables
@@ -60,7 +68,7 @@ typedef struct Formula {
 
 /** Data structure for interpretations */
 typedef struct Interpretation {
-    int *bindings;                // Values
+    Bool *bindings;                // Values
     int length;                   // Number of bindings
 } Interpretation;
 
@@ -81,3 +89,8 @@ typedef struct Action {
 
 
 #endif
+
+
+
+/** Initialiaze a new interpretation */
+void init_interpretation(Interpretation *I, int length);

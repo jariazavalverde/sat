@@ -3,8 +3,8 @@
  * FILENAME: main.c
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 23.07.2018
- * COMPILING: gcc -I/usr/include -L/usr/lib main.c read.h read.c structures.h sat.h sat.c -o sat
+ * DATE: 26.07.2018
+ * COMPILING: gcc -I/usr/include -L/usr/lib main.c read.h read.c structures.c structures.h sat.h sat.c -o sat
  * 
  *H*/
 
@@ -28,6 +28,8 @@ int main(int argc, char **argv) {
 		printf("Number of variables: %d\n", F.variables);
 		check_sat(&F, &I);
 		write_formula(&F);
+		printf("\n");
+		write_interpretation(&I);
 		printf("\n");
 	} else {
 		printf("error %d\n", read);
