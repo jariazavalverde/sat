@@ -1,6 +1,6 @@
 /*H*
  * 
- * FILENAME: read.h
+ * FILENAME: io.h
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
  * DATE: 26.07.2018

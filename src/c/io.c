@@ -1,13 +1,13 @@
 /*H*
  * 
- * FILENAME: read.c
+ * FILENAME: io.c
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
  * DATE: 26.07.2018
  * 
  *H*/
 
-#include "read.h"
+#include "io.h"
 
 
 

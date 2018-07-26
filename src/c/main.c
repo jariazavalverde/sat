@@ -4,12 +4,12 @@
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
  * DATE: 26.07.2018
- * COMPILING: gcc -I/usr/include -L/usr/lib main.c read.h read.c structures.c structures.h sat.h sat.c -o sat
+ * COMPILING: gcc -I/usr/include -L/usr/lib main.c io.h io.c structures.c structures.h sat.h sat.c -o sat
  * 
  *H*/
 
 #include <stdio.h>
-#include "read.h"
+#include "io.h"
 #include "structures.h"
 #include "sat.h"
 
