@@ -16,6 +16,7 @@
 
 
 int main(int argc, char **argv) {
+	int sat;
 	Formula F;
 	Interpretation I;
 	int read;
@@ -26,9 +27,9 @@ int main(int argc, char **argv) {
 		write_formula(&F);
 		printf("\nNumber of clauses: %d\n", F.length);
 		printf("Number of variables: %d\n", F.variables);
-		check_sat(&F, &I);
+		sat = check_sat(&F, &I);
 		write_formula(&F);
-		printf("\n");
+        printf(sat ? "SAT\n" : "UNSAT\n");
 		write_interpretation(&I);
 		printf("\n");
 	} else {

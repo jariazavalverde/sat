@@ -47,11 +47,13 @@ int dimacs_read_file(char *path, Formula *F) {
     F->sat_clauses = malloc(nbvar*sizeof(int));
     F->occurrences = malloc(nbvar*sizeof(ClauseNode*));
     F->arr_clauses = malloc(nbclauses*sizeof(ClauseNode*));
+    F->attempts = malloc(nbvar*sizeof(Literal));
     for(i = 0; i < nbvar; i++) {
         F->count_positives[i] = 0;
         F->count_negatives[i] = 0;
         F->sat_clauses[i] = 0;
         F->occurrences[i] = NULL;
+        F->attempts[i] = NONE;
     }
     // Read clauses
     for(i = 0; i < nbclauses; i++) {

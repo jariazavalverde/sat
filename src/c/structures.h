@@ -62,6 +62,7 @@ typedef struct Formula {
     int *sat_clauses;             // Satisfiable clauses
     int *count_positives;         // Number of positive literals of each variable
     int *count_negatives;         // Number of negative literals of each variable
+    Literal *attempts;            // Control for backtracking
     ClauseNode *unitaries;        // Clauses with a one literal
     ClauseNode **occurrences;     // Clauses where occurs each variable
 } Formula;
@@ -74,8 +75,8 @@ typedef struct Interpretation {
 
 /** Data structures for node actions */
 typedef struct ActionNode {
-	Atom step;                    // Step
 	Clause *clause;               // Clause removed
+	Atom atom;                    // Atom
 	Literal literal;              // Literal
 	struct ActionNode *prev;      // Previous node
 } ActionNode;
