@@ -3,7 +3,7 @@
  * FILENAME: sat.c
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 26.07.2018
+ * DATE: 27.07.2018
  * 
  *H*/
 
@@ -26,7 +26,7 @@ int check_sat(Formula *F, Interpretation *I) {
         if(success)
             success = split_cases(F, I, &actions);
         // Backtracking
-        if(!success && F->length > 0)
+        if(!success)
             success = backtracking(F, I, &actions);
     }
     return F->length == 0;
@@ -42,16 +42,18 @@ int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, 
     // Iterate clauses containing the literal
     while(node != NULL) {
         clause = node->clause;
-        literal = clause->arr_literals[atom]->literal;
-        // If same sign of literal, remove clause
-        if(literal == NEGATIVE && value == FALSE || literal == POSITIVE && value == TRUE) {
-            remove_clause(F, actions, clause, atom);
-        // else, remove the literal from the clause
-        } else {
-            if(clause->length == 1)
-                return 0;
-            remove_literal(F, actions, clause, atom);
-        }
+        if(!F->sat_clauses[clause->id]) {
+			literal = clause->arr_literals[atom]->literal;
+			// If same sign of literal, remove clause
+			if(literal == NEGATIVE && value == FALSE || literal == POSITIVE && value == TRUE) {
+				remove_clause(F, actions, clause, atom);
+			// else, remove the literal from the clause
+			} else {
+				if(clause->length == 1)
+					return 0;
+				remove_literal(F, actions, clause, atom);
+			}
+		}
         // Update node
         node = node->next;
     }
@@ -79,13 +81,14 @@ int positive_negative(Formula *F, Interpretation *I, Action *actions) {
     // Iterate variables
     for(i = 0; i < F->variables; i++) {
         // If variable is positive
-        if(F->count_positives[i] > 0 && F->count_negatives[i] == 0)
+        if(F->count_positives[i] > 0 && F->count_negatives[i] == 0) {
             if(replace_variable(F, I, actions, i, TRUE) == 0)
                 return 0;
         // If variable is negative
-        else if(F->count_negatives[i] > 0 && F->count_positives[i] == 0)
+        } else if(F->count_negatives[i] > 0 && F->count_positives[i] == 0) {
             if(replace_variable(F, I, actions, i, FALSE) == 0)
                 return 0;
+        }
     }
     return 1;
 }
@@ -110,8 +113,9 @@ int split_cases(Formula *F, Interpretation *I, Action *actions) {
             F->attempts[atom] = attempt != NONE ? BOTH : (literal == NEGATIVE ? FALSE : TRUE);
             return replace_variable(F, I, actions, atom, attempt == NONE && literal == NEGATIVE || attempt == POSITIVE ? FALSE : TRUE);
         }
+        return 0;
     }
-    return 0;
+    return 1;
 }
 
 /** Remove a clause from a formula */

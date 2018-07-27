@@ -3,7 +3,7 @@
  * FILENAME: sat.h
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 23.07.2018
+ * DATE: 27.07.2018
  * 
  *H*/
 
