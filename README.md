@@ -13,6 +13,31 @@ gcc -I/usr/include -L/usr/lib main.c io.h io.c structures.c structures.h sat.h s
 ./sat "path/to/file.cnf"
 ```
 
+### DIMACS CNF file format
+
+This format is used to define a bolean expression, written in **conjunctive normal form** (**CNF**), that may be used as an example of the **satisfiability problem**. A formula is in conjunctive normal form if it is a conjunction of one or more clauses, where a clause is a disjunction of literals.
+
+The CNF file format is an ASCII file format:
+
+1. The file may begin with comment lines. The first character of each comment line must be a lower case letter "c". Comment lines typically occur in one section at the beginning of the file, but are allowed to appear throughout the file.
+1. The comment lines are followed by the "problem" line. This begins with a lower case "p" followed by a space, followed by the problem type, which for CNF files is "cnf", followed by the number of variables followed by the number of clauses.
+1. The remainder of the file contains lines defining the clauses, one by one.
+1. A clause is defined by listing the index of each positive literal, and the negative index of each negative literal. Indices are 1-based, and for obvious reasons the index 0 is not allowed.
+1. The definition of a clause may extend beyond a single line of text.
+1. The definition of a clause is terminated by a final value of "0".
+1. The file terminates after the last clause is defined.
+
+Here is the CNF file that corresponds to the simple formula `(x1 OR (NOT x3)) AND (x2 OR x3 OR (NOT x1))`:
+
+```
+c  simple_v3_c2.cnf
+c
+p cnf 3 2
+1 -3 0
+2 3 -1 0
+```
+*Reference: [https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html](https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html)*
+
 ## Example
 
 ```shell
