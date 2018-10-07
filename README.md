@@ -16,7 +16,7 @@ gcc -I/usr/include -L/usr/lib main.c io.h io.c structures.c structures.h sat.h s
 ## Example
 
 ```shell
-./sat "examples/in/par8-1-c.cnf"
+./sat "examples/par8-1-c.cnf"
 ```
 
 ```shell
