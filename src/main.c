@@ -36,8 +36,10 @@ int main(int argc, char **argv) {
 		time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 		printf("Execution time: %f seconds\n", time_spent);
         printf(sat ? "SAT\n" : "UNSAT\n");
-		write_interpretation(&I);
-		printf("\n");
+        if(sat) {
+			write_interpretation(&I);
+			printf("\n");
+		}
 	} else {
 		printf("error %d\n", read);
 	}

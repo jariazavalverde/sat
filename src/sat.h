@@ -15,6 +15,8 @@
 int check_sat(Formula *F, Interpretation *I);
 /** Propagate a value of a variable */
 int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, Bool value);
+/** Unit propagation */
+int unit_propagation(Formula *F, Interpretation *I, Action *actions);
 /** Split cases */
 int split_cases(Formula *F, Interpretation *I, Action *actions);
 /** Remove a clause from a formula */

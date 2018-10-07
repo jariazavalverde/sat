@@ -17,7 +17,12 @@ int check_sat(Formula *F, Interpretation *I) {
     Action actions = {NULL, 0, 0};
     init_interpretation(I, F->variables);
     while(F->length > 0 && success) {
+        // Split cases
         success = split_cases(F, I, &actions);
+        // Unit propagation
+        if(success)
+			success = unit_propagation(F, I, &actions);
+        // Backtracking
         if(!success)
             success = backtracking(F, I, &actions);
     }
@@ -34,7 +39,6 @@ int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, 
     // Iterate clauses containing the literal
     while(node != NULL) {
         clause = node->clause;
-        //write_clause(node);
         if(!F->sat_clauses[clause->id]) {
             literal = clause->arr_literals[atom]->literal;
             // If same sign of literal, remove clause
@@ -50,6 +54,41 @@ int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, 
         // Update node
         node = node->next;
     }
+    return 1;
+}
+
+/** Unit propagation */
+int unit_propagation(Formula *F, Interpretation *I, Action *actions) {
+    LiteralNode *literal_node;
+    ClauseNode *clause_node, *next;
+    Clause *clause;
+    Atom atom;
+    int push = 0;
+    while(F->lst_unitaries != NULL) {
+		clause_node = F->lst_unitaries;
+		F->lst_unitaries = NULL;
+		// Iterate unitary clauses
+		while(clause_node != NULL) {
+			// Update unitary nodes
+			next = clause_node->next;
+			clause_node->prev = NULL;
+			clause_node->next = NULL;
+			clause = clause_node->clause;
+			if(!F->sat_clauses[clause->id]) {
+				literal_node = clause->lst_literals;
+				atom = literal_node->atom;
+				F->attempts[atom] = BOTH;
+				if(!push) {
+					push_action(actions, NULL, atom, NONE);
+					push = 1;
+				}
+				// Replace variable
+				if(replace_variable(F, I, actions, atom, literal_node->literal == NEGATIVE ? FALSE : TRUE) == 0)
+					return 0;
+			}
+			clause_node = next;
+		}
+	}
     return 1;
 }
 
@@ -122,6 +161,16 @@ void remove_literal(Formula *F, Action *actions, Clause *clause, Atom atom) {
         prev->next = next;
     if(next != NULL)
         next->prev = prev;
+    // Update unitary clauses
+    if(clause->length == 1) {
+        unitary = F->arr_unitaries[clause->id];
+        unitary->prev = NULL;
+        if(F->lst_unitaries != NULL) {
+			unitary->next = F->lst_unitaries->next;
+            F->lst_unitaries->next = unitary;
+        }
+        F->lst_unitaries = unitary;
+    }
     // Add action
     push_action(actions, clause, atom, literal);
 }
@@ -152,6 +201,14 @@ void add_literal(Formula *F, Clause *clause, Atom atom, Literal literal) {
     if(clause->lst_literals != NULL)
         clause->lst_literals->prev = node;
     clause->lst_literals = node;
+    // Update unitary clauses
+    if(clause->length == 2) {
+        unitary = F->arr_unitaries[clause->id];
+        if(F->lst_unitaries != NULL && F->lst_unitaries->clause->id == unitary->clause->id)
+			F->lst_unitaries = unitary->next;
+		if(unitary->next != NULL)
+			unitary->next->prev = unitary->prev;
+    }
 }
 
 /** Prepend a new action */

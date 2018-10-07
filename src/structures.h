@@ -61,6 +61,8 @@ typedef struct Formula {
     int variables;                // Number of unique variables
     int *sat_clauses;             // Satisfiable clauses
     Literal *attempts;            // Control for backtracking
+    ClauseNode **arr_unitaries;   // Array of one-literal clauses
+    ClauseNode *lst_unitaries;    // Linked-list of one-literal clauses
     ClauseNode **occurrences;     // Clauses where occurs each variable
     Atom selected_atom;           // Selected atom for iterate
 } Formula;

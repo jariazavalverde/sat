@@ -20,7 +20,7 @@ int dimacs_read_file(char *path, Formula *F) {
     Clause *clause;
     Literal literal;
     LiteralNode *literal_node, *last_literal_node;
-    ClauseNode *clause_node = NULL, *last_clause_node, *occurrence;
+    ClauseNode *clause_node = NULL, *last_clause_node, *unitaries, *occurrence;
     // Open file
     file = fopen(path, "r");
     // If file not exists, error
@@ -42,9 +42,11 @@ int dimacs_read_file(char *path, Formula *F) {
     F->length = nbclauses;
     F->variables = nbvar;
     F->lst_clauses = NULL;
+    F->lst_unitaries = NULL;
     F->sat_clauses = malloc(nbclauses*sizeof(int));
     F->occurrences = malloc(nbvar*sizeof(ClauseNode*));
     F->arr_clauses = malloc(nbclauses*sizeof(ClauseNode*));
+    F->arr_unitaries = malloc(nbclauses*sizeof(ClauseNode*));
     F->attempts = malloc(nbvar*sizeof(Literal));
     for(i = 0; i < nbvar; i++) {
         F->occurrences[i] = NULL;
@@ -93,6 +95,18 @@ int dimacs_read_file(char *path, Formula *F) {
             fgetc(file); // read space
         }
         clause->length = length;
+        // Unitary clause
+        unitaries = malloc(sizeof(ClauseNode));
+		unitaries->clause = clause;
+		unitaries->next = NULL;
+		unitaries->prev = NULL;
+		F->arr_unitaries[i] = unitaries;
+        if(length == 1) {
+            unitaries->next = F->lst_unitaries;
+            if(F->lst_unitaries != NULL)
+                F->lst_unitaries->prev = unitaries;
+            F->lst_unitaries = unitaries;
+        }
         clause_node->clause = clause;
         clause_node->next = NULL;
         clause_node->prev = last_clause_node;
