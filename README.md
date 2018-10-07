@@ -26,3 +26,7 @@ Number of variables: 64
 SAT
  1:true  2:false  3:true  4:false  5:false  6:false  7:false  8:false  9:false  10:false  11:false  12:false  13:false  14:false  15:false  16:false  17:false  18:false  19:false  20:false  21:false  22:false  23:false  24:false  25:false  26:false  27:false  28:false  29:false  30:false  31:false  32:true  33:false  34:false  35:true  36:true  37:false  38:true  39:true  40:false  41:true  42:true  43:true  44:true  45:true  46:false  47:true  48:true  49:true  50:true  51:true  52:false  53:true  54:true  55:true  56:true  57:true  58:false  59:true  60:false  61:true  62:true  63:true  64:false
  ```
+
+## License
+
+The source code of this repository (located in the [**src** folder](src)) is released under the terms of the [BSD 3-Clause License](LICENSE). Sample files included in the [**examples** folder](examples) were originally taken from [here](https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html) and are released under the [GNU LGPL License](https://people.sc.fsu.edu/~jburkardt/txt/gnu_lgpl.txt).
