@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Data structures for SAT problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 26.07.2018
+ * DATE: 07.10.2018
  * 
  *H*/
 
