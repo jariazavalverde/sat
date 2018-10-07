@@ -9,6 +9,7 @@
  *H*/
 
 #include <stdio.h>
+#include <time.h>
 #include "io.h"
 #include "structures.h"
 #include "sat.h"
@@ -16,6 +17,8 @@
 
 
 int main(int argc, char **argv) {
+	clock_t begin, end;
+	double time_spent;
 	int sat;
 	Formula F;
 	Interpretation I;
@@ -27,7 +30,11 @@ int main(int argc, char **argv) {
 		write_formula(&F);
 		printf("\nNumber of clauses: %d\n", F.length);
 		printf("Number of variables: %d\n", F.variables);
+		begin = clock();
 		sat = check_sat(&F, &I);
+		end = clock();
+		time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+		printf("Execution time: %f seconds\n", time_spent);
         printf(sat ? "SAT\n" : "UNSAT\n");
 		write_interpretation(&I);
 		printf("\n");

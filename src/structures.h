@@ -60,10 +60,7 @@ typedef struct Formula {
     int length;                   // Number of clauses in the list
     int variables;                // Number of unique variables
     int *sat_clauses;             // Satisfiable clauses
-    int *count_positives;         // Number of positive literals of each variable
-    int *count_negatives;         // Number of negative literals of each variable
     Literal *attempts;            // Control for backtracking
-    ClauseNode *unitaries;        // Clauses with a one literal
     ClauseNode **occurrences;     // Clauses where occurs each variable
     Atom selected_atom;           // Selected atom for iterate
 } Formula;

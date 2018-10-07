@@ -17,18 +17,9 @@ int check_sat(Formula *F, Interpretation *I) {
     Action actions = {NULL, 0, 0};
     init_interpretation(I, F->variables);
     while(F->length > 0 && success) {
-        // 1-literal rule
-        /*success = unit_propagation(F, I, &actions);
-        // Positive-negative rule
-        if(success)
-            success = positive_negative(F, I, &actions);
-        // Split cases
-        if(success)*/
-            success = split_cases(F, I, &actions);
-        // Backtracking
-        if(!success){
+        success = split_cases(F, I, &actions);
+        if(!success)
             success = backtracking(F, I, &actions);
-        }
     }
     return F->length == 0;
 }
@@ -58,39 +49,6 @@ int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, 
         }
         // Update node
         node = node->next;
-    }
-    return 1;
-}
-
-/** 1-Literal rule (unit propagation) */
-int unit_propagation(Formula *F, Interpretation *I, Action *actions) {
-    LiteralNode *literal_node;
-    // Iterate unitary clauses
-    while(F->unitaries != NULL) {
-        literal_node = F->unitaries->clause->lst_literals;
-        // Replace variable
-        if(replace_variable(F, I, actions, literal_node->atom, literal_node->literal == NEGATIVE ? FALSE : TRUE) == 0)
-            return 0;
-        // Update unitary nodes
-        F->unitaries = F->unitaries->next;
-    }
-    return 1;
-}
-
-/** Positive-Negative rule */
-int positive_negative(Formula *F, Interpretation *I, Action *actions) {
-    int i;
-    // Iterate variables
-    for(i = 0; i < F->variables; i++) {
-        // If variable is positive
-        if(F->count_positives[i] > 0 && F->count_negatives[i] == 0) {
-            if(replace_variable(F, I, actions, i, TRUE) == 0)
-                return 0;
-        // If variable is negative
-        } else if(F->count_negatives[i] > 0 && F->count_positives[i] == 0) {
-            if(replace_variable(F, I, actions, i, FALSE) == 0)
-                return 0;
-        }
     }
     return 1;
 }
@@ -145,8 +103,6 @@ void remove_clause(Formula *F, Action *actions, Clause *clause, Atom atom) {
         prev->next = next;
     if(next != NULL)
         next->prev = prev;
-    // Update count of positive-negative literals
-    update_count_positive_negative(F, clause, REMOVE);
     // Add action
     push_action(actions, clause, atom, NONE);
 }
@@ -166,23 +122,6 @@ void remove_literal(Formula *F, Action *actions, Clause *clause, Atom atom) {
         prev->next = next;
     if(next != NULL)
         next->prev = prev;
-    // Update unitary clauses
-    /*if(clause->length == 1) {
-        unitary = malloc(sizeof(ClauseNode));
-        unitary->clause = clause;
-        unitary->next = F->unitaries == NULL ? NULL : F->unitaries->next;
-        unitary->prev = F->unitaries;
-        if(F->unitaries != NULL)
-            F->unitaries->next = unitary;
-        else
-            F->unitaries = unitary;
-    }*/
-    // Update count of positive-negative literals
-    literal = clause->arr_literals[atom]->literal;
-    if(literal == NEGATIVE)
-        F->count_negatives[atom]--;
-    else
-        F->count_positives[atom]--;
     // Add action
     push_action(actions, clause, atom, literal);
 }
@@ -200,13 +139,12 @@ void add_clause(Formula *F, Clause *clause) {
     if(F->lst_clauses != NULL)
         F->lst_clauses->prev = node;
     F->lst_clauses = node;
-    // Update count of positive-negative literals
-    update_count_positive_negative(F, clause, ADD);
 }
 
 /** Add a literal to a clause */
 void add_literal(Formula *F, Clause *clause, Atom atom, Literal literal) {
     LiteralNode *node = clause->arr_literals[atom];
+    ClauseNode *unitary;
     // Add node
     clause->length++;
     node->prev = NULL;
@@ -214,31 +152,6 @@ void add_literal(Formula *F, Clause *clause, Atom atom, Literal literal) {
     if(clause->lst_literals != NULL)
         clause->lst_literals->prev = node;
     clause->lst_literals = node;
-    // Update unitary clauses
-    if(clause->length == 2) {
-        // TODO
-    }
-    // Update count of positive-negative literals
-    if(literal == NEGATIVE)
-        F->count_negatives[atom]++;
-    else
-        F->count_positives[atom]++;
-}
-
-/** Update count of positive-negative literals in a formula */
-void update_count_positive_negative(Formula *F, Clause *clause, Operation op) {
-    int incr = op == ADD ? 1 : -1;
-    LiteralNode *node = clause->lst_literals;
-    // Iterate literals
-    while(node) {
-        if(node->literal == NEGATIVE) {
-            F->count_negatives[node->atom] += incr;
-        } else {
-            F->count_positives[node->atom] += incr;
-        }
-        // Update node
-        node = node->next;
-    }
 }
 
 /** Prepend a new action */

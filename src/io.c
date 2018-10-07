@@ -20,7 +20,7 @@ int dimacs_read_file(char *path, Formula *F) {
     Clause *clause;
     Literal literal;
     LiteralNode *literal_node, *last_literal_node;
-    ClauseNode *clause_node = NULL, *last_clause_node, *unitaries, *occurrence;
+    ClauseNode *clause_node = NULL, *last_clause_node, *occurrence;
     // Open file
     file = fopen(path, "r");
     // If file not exists, error
@@ -42,16 +42,11 @@ int dimacs_read_file(char *path, Formula *F) {
     F->length = nbclauses;
     F->variables = nbvar;
     F->lst_clauses = NULL;
-    F->unitaries = NULL;
-    F->count_positives = malloc(nbvar*sizeof(int));
-    F->count_negatives = malloc(nbvar*sizeof(int));
     F->sat_clauses = malloc(nbclauses*sizeof(int));
     F->occurrences = malloc(nbvar*sizeof(ClauseNode*));
     F->arr_clauses = malloc(nbclauses*sizeof(ClauseNode*));
     F->attempts = malloc(nbvar*sizeof(Literal));
     for(i = 0; i < nbvar; i++) {
-        F->count_positives[i] = 0;
-        F->count_negatives[i] = 0;
         F->occurrences[i] = NULL;
         F->attempts[i] = NONE;
     }
@@ -76,10 +71,6 @@ int dimacs_read_file(char *path, Formula *F) {
             atom = var > 0 ? var : -var;
             atom--;
             literal = var > 0 ? POSITIVE : NEGATIVE;
-            if(literal == NEGATIVE)
-                F->count_negatives[atom]++;
-            else
-                F->count_positives[atom]++;
             last_literal_node = literal_node;
             literal_node = malloc(sizeof(LiteralNode));
             clause->arr_literals[atom] = literal_node;
@@ -102,16 +93,6 @@ int dimacs_read_file(char *path, Formula *F) {
             fgetc(file); // read space
         }
         clause->length = length;
-        // Unitary clause
-        if(length == 1) {
-            unitaries = malloc(sizeof(ClauseNode));
-            unitaries->clause = clause;
-            unitaries->next = F->unitaries;
-            unitaries->prev = NULL;
-            if(F->unitaries != NULL)
-                F->unitaries->prev = unitaries;
-            F->unitaries = unitaries;
-        }
         clause_node->clause = clause;
         clause_node->next = NULL;
         clause_node->prev = last_clause_node;
