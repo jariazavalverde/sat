@@ -38,25 +38,26 @@ int dimacs_read_file(char *path, Formula *F) {
     // Read header
     if(ch != 'p' || fscanf(file, " cnf %d %d\n", &nbvar, &nbclauses) != 2)
         return 2;
+    F->selected_atom = -1;
     F->length = nbclauses;
     F->variables = nbvar;
     F->lst_clauses = NULL;
     F->unitaries = NULL;
     F->count_positives = malloc(nbvar*sizeof(int));
     F->count_negatives = malloc(nbvar*sizeof(int));
-    F->sat_clauses = malloc(nbvar*sizeof(int));
+    F->sat_clauses = malloc(nbclauses*sizeof(int));
     F->occurrences = malloc(nbvar*sizeof(ClauseNode*));
     F->arr_clauses = malloc(nbclauses*sizeof(ClauseNode*));
     F->attempts = malloc(nbvar*sizeof(Literal));
     for(i = 0; i < nbvar; i++) {
         F->count_positives[i] = 0;
         F->count_negatives[i] = 0;
-        F->sat_clauses[i] = 0;
         F->occurrences[i] = NULL;
         F->attempts[i] = NONE;
     }
     // Read clauses
     for(i = 0; i < nbclauses; i++) {
+		F->sat_clauses[i] = 0;
         length = 0;
         last_clause_node = clause_node;
         clause = malloc(sizeof(Clause));
@@ -125,18 +126,23 @@ int dimacs_read_file(char *path, Formula *F) {
 
 /** Write a formula for the stardard output */
 void write_formula(Formula *F) {
-    LiteralNode *literal_node;
     ClauseNode *clause_node = F->lst_clauses;
     while(clause_node != NULL) {
-        printf("( ");
-        literal_node = clause_node->clause->lst_literals;
-        while(literal_node != NULL) {
-            write_literal(literal_node->atom, literal_node->literal);
-            literal_node = literal_node->next;
-        }
-        printf(")");
+        write_clause(clause_node);
         clause_node = clause_node->next;
     }
+}
+
+/** Write a clause for the stardard output */
+void write_clause(ClauseNode *clause_node) {
+    LiteralNode *literal_node;
+    printf("( ");
+	literal_node = clause_node->clause->lst_literals;
+	while(literal_node != NULL) {
+		write_literal(literal_node->atom, literal_node->literal);
+		literal_node = literal_node->next;
+	}
+	printf(")");
 }
 
 /** Write a literal for the stardard output */
@@ -144,7 +150,7 @@ void write_literal(Atom atom, Literal literal) {
     printf(literal == NEGATIVE ? "-%d " : "%d ", atom+1);
 }
 
-/** Write a interpretation */
+/** Write a interpretation for the stardard output */
 void write_interpretation(Interpretation *I) {
     int i;
     Bool value;

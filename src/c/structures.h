@@ -22,7 +22,7 @@
 typedef int Atom;
 
 /** Possible states of literals */
-typedef enum {NONE, NEGATIVE, POSITIVE, BOTH} Literal;
+typedef enum {NONE = -1, NEGATIVE = 0, POSITIVE = 1, BOTH = 2} Literal;
 
 /** Boolean values */
 typedef enum {UNKNOWN = -1, FALSE = 0, TRUE = 1} Bool;
@@ -65,11 +65,12 @@ typedef struct Formula {
     Literal *attempts;            // Control for backtracking
     ClauseNode *unitaries;        // Clauses with a one literal
     ClauseNode **occurrences;     // Clauses where occurs each variable
+    Atom selected_atom;           // Selected atom for iterate
 } Formula;
 
 /** Data structure for interpretations */
 typedef struct Interpretation {
-    Bool *bindings;                // Values
+    Bool *bindings;               // Values
     int length;                   // Number of bindings
 } Interpretation;
 
@@ -79,12 +80,14 @@ typedef struct ActionNode {
 	Atom atom;                    // Atom
 	Literal literal;              // Literal
 	struct ActionNode *prev;      // Previous node
+	int id;
 } ActionNode;
 
 /** Data structures for record actions */
 typedef struct Action {
 	ActionNode *first;            // First node
 	int length;                   // Number of nodes
+	int last_id;
 } Action;
 
 

@@ -14,20 +14,21 @@
 /** Check satisfiability of a formula */
 int check_sat(Formula *F, Interpretation *I) {
     int success = 1;
-    Action actions = {NULL, 0};
+    Action actions = {NULL, 0, 0};
     init_interpretation(I, F->variables);
     while(F->length > 0 && success) {
         // 1-literal rule
-        success = unit_propagation(F, I, &actions);
+        /*success = unit_propagation(F, I, &actions);
         // Positive-negative rule
         if(success)
             success = positive_negative(F, I, &actions);
         // Split cases
-        if(success)
+        if(success)*/
             success = split_cases(F, I, &actions);
         // Backtracking
-        if(!success)
+        if(!success){
             success = backtracking(F, I, &actions);
+        }
     }
     return F->length == 0;
 }
@@ -42,18 +43,19 @@ int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, 
     // Iterate clauses containing the literal
     while(node != NULL) {
         clause = node->clause;
+        //write_clause(node);
         if(!F->sat_clauses[clause->id]) {
-			literal = clause->arr_literals[atom]->literal;
-			// If same sign of literal, remove clause
-			if(literal == NEGATIVE && value == FALSE || literal == POSITIVE && value == TRUE) {
-				remove_clause(F, actions, clause, atom);
-			// else, remove the literal from the clause
-			} else {
-				if(clause->length == 1)
-					return 0;
-				remove_literal(F, actions, clause, atom);
-			}
-		}
+            literal = clause->arr_literals[atom]->literal;
+            // If same sign of literal, remove clause
+            if(literal == NEGATIVE && value == FALSE || literal == POSITIVE && value == TRUE) {
+                remove_clause(F, actions, clause, atom);
+            // else, remove the literal from the clause
+            } else {
+                if(clause->length == 1)
+                    return 0;
+                remove_literal(F, actions, clause, atom);
+            }
+        }
         // Update node
         node = node->next;
     }
@@ -102,18 +104,26 @@ int split_cases(Formula *F, Interpretation *I, Action *actions) {
     // Get uninterpreted literal
     clause_node = F->lst_clauses;
     if(clause_node != NULL) {
-        literal_node = clause_node->clause->lst_literals;
-        if(literal_node != NULL) {
-            atom = literal_node->atom;
-            literal = literal_node->literal;
-            attempt = F->attempts[atom];
-            if(attempt == BOTH)
-                return 0;
-            push_action(actions, NULL, atom, NONE);
-            F->attempts[atom] = attempt != NONE ? BOTH : (literal == NEGATIVE ? FALSE : TRUE);
-            return replace_variable(F, I, actions, atom, attempt == NONE && literal == NEGATIVE || attempt == POSITIVE ? FALSE : TRUE);
-        }
-        return 0;
+		if(F->selected_atom == -1) {
+			literal_node = clause_node->clause->lst_literals;
+			if(literal_node != NULL) {
+				atom = literal_node->atom;
+				literal = literal_node->literal;
+				attempt = F->attempts[atom];
+				if(attempt == BOTH)
+					return 0;
+				push_action(actions, NULL, atom, NONE);
+				F->attempts[atom] = attempt != NONE ? BOTH : (literal == NEGATIVE ? NEGATIVE : POSITIVE);
+				return replace_variable(F, I, actions, atom, attempt == NONE && literal == NEGATIVE || attempt == POSITIVE ? FALSE : TRUE);
+			}
+			return 0;
+		} else {
+			atom = F->selected_atom;
+			attempt = F->attempts[atom];
+			F->selected_atom = -1;
+			F->attempts[atom] = BOTH;
+			return replace_variable(F, I, actions, atom, attempt == POSITIVE ? FALSE : TRUE);
+		}
     }
     return 1;
 }
@@ -129,15 +139,12 @@ void remove_clause(Formula *F, Action *actions, Clause *clause, Atom atom) {
     // Remove node
     prev = F->arr_clauses[clause_id]->prev;
     next = F->arr_clauses[clause_id]->next;
-    if(prev == NULL) {
+    if(prev == NULL)
         F->lst_clauses = next;
-        if(next)
-			F->lst_clauses->prev = NULL;
-    } else {
+    else
         prev->next = next;
-        if(next != NULL)
-            next->prev = prev;
-    }
+    if(next != NULL)
+        next->prev = prev;
     // Update count of positive-negative literals
     update_count_positive_negative(F, clause, REMOVE);
     // Add action
@@ -153,17 +160,14 @@ void remove_literal(Formula *F, Action *actions, Clause *clause, Atom atom) {
     clause->length--;
     prev = clause->arr_literals[atom]->prev;
     next = clause->arr_literals[atom]->next;
-    if(prev == NULL) {
+    if(prev == NULL)
         clause->lst_literals = next;
-        if(next)
-			clause->lst_literals->prev = NULL;
-    } else {
+    else
         prev->next = next;
-        if(next != NULL)
-            next->prev = prev;
-    }
+    if(next != NULL)
+        next->prev = prev;
     // Update unitary clauses
-    if(clause->length == 1) {
+    /*if(clause->length == 1) {
         unitary = malloc(sizeof(ClauseNode));
         unitary->clause = clause;
         unitary->next = F->unitaries == NULL ? NULL : F->unitaries->next;
@@ -172,7 +176,7 @@ void remove_literal(Formula *F, Action *actions, Clause *clause, Atom atom) {
             F->unitaries->next = unitary;
         else
             F->unitaries = unitary;
-    }
+    }*/
     // Update count of positive-negative literals
     literal = clause->arr_literals[atom]->literal;
     if(literal == NEGATIVE)
@@ -246,27 +250,37 @@ void push_action(Action *actions, Clause *clause, Atom atom, Literal literal) {
     action->literal = literal;
     action->prev = actions->first;
     actions->first = action;
+    actions->length++;
+    actions->last_id++;
+    action->id = actions->last_id;
 }
 
 /** Perform a backtracking */
 int backtracking(Formula *F, Interpretation *I, Action *actions) {
     ActionNode *action = actions->first, *prev;
     // Pull actions
-    while(action != NULL && (action->clause != NULL || action->literal != NONE)) {
-        // Restore clause or literal
-        if(action->literal == NONE)
-		    add_clause(F, action->clause);
-		else
-		    add_literal(F, action->clause, action->atom, action->literal);
-		// Update node
-		prev = action->prev;
-		free(action);
-		action = prev;
+    while(action != NULL && (action->clause != NULL || action->clause == NULL && F->attempts[action->atom] == BOTH)) {
+        if(action->clause != NULL) {
+            // Restore clause
+            if(action->literal == NONE)
+                add_clause(F, action->clause);
+            // Restore literal
+            else
+                add_literal(F, action->clause, action->atom, action->literal);
+        // Restore variable
+        } else {
+            I->bindings[action->atom] = UNKNOWN;
+            F->attempts[action->atom] = NONE;
+        }
+        // Update node
+        prev = action->prev;
+        free(action);
+        action = prev;
+        actions->length--;
     }
     if(action == NULL)
         return 0;
-    I->bindings[action->atom] = NONE;
-    actions->first = action->prev;
-    free(action);
+    F->selected_atom = action->atom;
+    actions->first = action;
     return 1;
 }
