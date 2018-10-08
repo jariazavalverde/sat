@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
 				printf("Number of variables: %d\n", F.variables);
 			}
 			begin = clock();
+			// Check satisfiability
 			sat = check_sat(&F, &I);
 			end = clock();
 			// Show execution time

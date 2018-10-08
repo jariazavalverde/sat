@@ -3,7 +3,7 @@
  * FILENAME: sat.h
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 27.07.2018
+ * DATE: 08.10.2018
  * 
  *H*/
 
@@ -23,11 +23,15 @@ int split_cases(Formula *F, Interpretation *I, Action *actions);
 void remove_clause(Formula *F, Action *actions, Clause *clause, Atom atom);
 /** Remove a literal from a clause */
 void remove_literal(Formula *F, Action *actions, Clause *clause, Atom atom);
+/** Remove unitary clause */
+void remove_unitary_clause(Formula *F, int clause_id);
 /** Add a clause to a formula */
 void add_clause(Formula *F, Clause *clause);
 /** Add a literal to a clause */
 void add_literal(Formula *F, Clause *clause, Atom atom, Literal literal);
 /** Prepend a new action */
 void push_action(Action *actions, Clause *clause, Atom atom, Literal literal);
+/** Add unitary clause */
+void add_unitary_clause(Formula *F, int clause_id);
 /** Perform a backtracking */
 int backtracking(Formula *F, Interpretation *I, Action *actions);
