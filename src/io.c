@@ -151,7 +151,9 @@ void write_interpretation(Interpretation *I) {
     Bool value;
     for(i = 0; i < I->length; i++) {
         value = I->bindings[i];
-        if(value != UNKNOWN)
-            printf(" %d:%s ", i+1, value == FALSE ? "false" : "true");
+        if(value == TRUE)
+            printf("%d ", i+1);
+        else if(value == FALSE)
+            printf("-%d ", i+1);
     }
 }

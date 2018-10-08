@@ -63,6 +63,7 @@ int unit_propagation(Formula *F, Interpretation *I, Action *actions) {
     ClauseNode *clause_node, *next;
     Clause *clause;
     Atom atom;
+    int push = 0;
     while(F->lst_unitaries != NULL) {
 		clause_node = F->lst_unitaries;
 		F->lst_unitaries = NULL;
@@ -76,8 +77,11 @@ int unit_propagation(Formula *F, Interpretation *I, Action *actions) {
 			if(!F->sat_clauses[clause->id] && clause->length == 1) {
 				literal_node = clause->lst_literals;
 				atom = literal_node->atom;
-				F->attempts[atom] = BOTH;
-				push_action(actions, NULL, atom, NONE);
+				if(!push) {
+					F->attempts[atom] = BOTH;
+					push_action(actions, NULL, atom, NONE);
+					push = 1;
+				}
 				// Replace variable
 				if(replace_variable(F, I, actions, atom, literal_node->literal == NEGATIVE ? FALSE : TRUE) == 0)
 					return 0;
