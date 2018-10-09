@@ -3,7 +3,7 @@
  * FILENAME: sat.h
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 08.10.2018
+ * DATE: 09.10.2018
  * 
  *H*/
 
@@ -14,11 +14,13 @@
 /** Check satisfiability of a formula */
 int check_sat(Formula *F, Interpretation *I);
 /** Propagate a value of a variable */
-int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, Bool value);
+int replace_variable(Formula *F, Graph *G, Interpretation *I, Action *actions, Atom atom, Bool value);
 /** Unit propagation */
-int unit_propagation(Formula *F, Interpretation *I, Action *actions);
+int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions);
 /** Split cases */
-int split_cases(Formula *F, Interpretation *I, Action *actions);
+int split_cases(Formula *F, Graph *G, Interpretation *I, Action *actions);
+/** Analyze the conflict in the implication graph */
+Clause *analyze_conflict(Formula *F, Graph *G);
 /** Remove a clause from a formula */
 void remove_clause(Formula *F, Action *actions, Clause *clause, Atom atom);
 /** Remove a literal from a clause */

@@ -3,7 +3,7 @@
  * FILENAME: sat.c
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 08.10.2018
+ * DATE: 09.10.2018
  * 
  *H*/
 
@@ -14,17 +14,21 @@
 /** Check satisfiability of a formula */
 int check_sat(Formula *F, Interpretation *I) {
     int success = 1;
-    Action actions = {NULL, 0, 0};
+    Action actions;
+    Graph G;
+    // Initialize structures
     init_interpretation(I, F->variables);
+    init_action(&actions);
+    init_graph(&G, F->variables);
     // Unit propagation
-    if(unit_propagation(F, I, &actions) == 0)
+    if(unit_propagation(F, &G, I, &actions) == 0)
 		return 0;
     while(F->length > 0 && success) {
         // Split cases
-        success = split_cases(F, I, &actions);
+        success = split_cases(F, &G, I, &actions);
         // Unit propagation
         if(success)
-			success = unit_propagation(F, I, &actions);
+			success = unit_propagation(F, &G, I, &actions);
         // Backtracking
         if(!success)
             success = backtracking(F, I, &actions);
@@ -33,7 +37,7 @@ int check_sat(Formula *F, Interpretation *I) {
 }
 
 /** Propagate a value of a variable */
-int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, Bool value) {
+int replace_variable(Formula *F, Graph *G, Interpretation *I, Action *actions, Atom atom, Bool value) {
     Literal literal;
     Clause *clause;
     ClauseNode *node = F->occurrences[atom];
@@ -49,8 +53,11 @@ int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, 
                 remove_clause(F, actions, clause, atom);
             // else, remove the literal from the clause
             } else {
-                if(clause->length == 1)
+                if(clause->length == 1) {
+					// Add conflictive node
+					add_graph_node(G, atom, value, CONFLICTIVE, clause);
                     return 0;
+                }
                 remove_literal(F, actions, clause, atom);
             }
         }
@@ -61,11 +68,12 @@ int replace_variable(Formula *F, Interpretation *I, Action *actions, Atom atom, 
 }
 
 /** Unit propagation */
-int unit_propagation(Formula *F, Interpretation *I, Action *actions) {
+int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions) {
     LiteralNode *literal_node;
     ClauseNode *clause_node, *next;
     Clause *clause;
     Atom atom;
+    Bool value;
     // Push action
     if(F->lst_unitaries != NULL) {
 		atom = F->lst_unitaries->clause->lst_literals->atom;
@@ -84,8 +92,11 @@ int unit_propagation(Formula *F, Interpretation *I, Action *actions) {
 			clause = clause_node->clause;
 			literal_node = clause->lst_literals;
 			atom = literal_node->atom;
+			value = literal_node->literal == NEGATIVE ? FALSE : TRUE;
+			// Add graph node
+			add_graph_node(G, atom, value, FORCED, clause);
 			// Replace variable
-			if(replace_variable(F, I, actions, atom, literal_node->literal == NEGATIVE ? FALSE : TRUE) == 0)
+			if(replace_variable(F, G, I, actions, atom, value) == 0)
 				return 0;
 			clause_node = next;
 		}
@@ -94,9 +105,10 @@ int unit_propagation(Formula *F, Interpretation *I, Action *actions) {
 }
 
 /** Split cases */
-int split_cases(Formula *F, Interpretation *I, Action *actions) {
+int split_cases(Formula *F, Graph *G, Interpretation *I, Action *actions) {
     Atom atom;
     Literal literal, attempt;
+    Bool value;
     ClauseNode *clause_node;
     LiteralNode *literal_node;
     // Get uninterpreted literal
@@ -110,9 +122,11 @@ int split_cases(Formula *F, Interpretation *I, Action *actions) {
 				attempt = F->attempts[atom];
 				if(attempt == BOTH)
 					return 0;
+				value = literal == NEGATIVE ? FALSE : TRUE;
 				push_action(actions, NULL, atom, NONE);
-				F->attempts[atom] = attempt != NONE ? BOTH : (literal == NEGATIVE ? NEGATIVE : POSITIVE);
-				return replace_variable(F, I, actions, atom, attempt == NONE && literal == NEGATIVE || attempt == POSITIVE ? FALSE : TRUE);
+				add_graph_node(G, atom, value, ARBITRARY, NULL);
+				F->attempts[atom] = attempt != NONE ? BOTH : literal;
+				return replace_variable(F, G, I, actions, atom, value);
 			}
 			return 0;
 		} else {
@@ -120,10 +134,17 @@ int split_cases(Formula *F, Interpretation *I, Action *actions) {
 			attempt = F->attempts[atom];
 			F->selected_atom = -1;
 			F->attempts[atom] = BOTH;
-			return replace_variable(F, I, actions, atom, attempt == POSITIVE ? FALSE : TRUE);
+			value = attempt == POSITIVE ? FALSE : TRUE;
+			set_graph_node(G, atom, value);
+			return replace_variable(F, G, I, actions, atom, value);
 		}
     }
     return 1;
+}
+
+/** Analyze the conflict in the implication graph */
+Clause *analyze_conflict(Formula *F, Graph *G) {
+	return NULL;
 }
 
 /** Remove a clause from a formula */
@@ -238,8 +259,6 @@ void push_action(Action *actions, Clause *clause, Atom atom, Literal literal) {
     action->prev = actions->first;
     actions->first = action;
     actions->length++;
-    actions->last_id++;
-    action->id = actions->last_id;
 }
 
 /** Perform a backtracking */

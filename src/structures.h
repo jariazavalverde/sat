@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Data structures for SAT problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 07.10.2018
+ * DATE: 09.10.2018
  * 
  *H*/
 
@@ -27,8 +27,8 @@ typedef enum {NONE = -1, NEGATIVE = 0, POSITIVE = 1, BOTH = 2} Literal;
 /** Boolean values */
 typedef enum {UNKNOWN = -1, FALSE = 0, TRUE = 1} Bool;
 
-/** Possible operations */
-typedef enum {REMOVE, ADD} Operation;
+/** Possible kinds of nodes in implication graphs */
+typedef enum {ARBITRARY, FORCED, CONFLICTIVE} Decision;
 
 /** Data structure for literals linked-lists */
 typedef struct LiteralNode {
@@ -41,9 +41,11 @@ typedef struct LiteralNode {
 /** Data structure for clauses */
 typedef struct Clause {
 	int id;                       // Auto-increment identifier
+	int *literals;                // Array of identifiers of literals
 	LiteralNode **arr_literals;   // Array of literals
     LiteralNode *lst_literals;    // Linked-list of literals
     int length;                   // Number of literals in the list
+    int size;                     // Total number of literals
 } Clause;
 
 /** Data structure for clauses linked-lists */
@@ -79,15 +81,29 @@ typedef struct ActionNode {
 	Atom atom;                    // Atom
 	Literal literal;              // Literal
 	struct ActionNode *prev;      // Previous node
-	int id;
 } ActionNode;
 
 /** Data structures for record actions */
 typedef struct Action {
 	ActionNode *first;            // First node
 	int length;                   // Number of nodes
-	int last_id;
 } Action;
+
+/** Data structure for nodes of implication graphs */
+typedef struct GraphNode {
+	Atom atom;                    // Atom of the node
+	Bool value;                   // Value for the atom
+	Decision decision;            // Kind of decision
+	int level;                    // Decision level
+	int *antecedents;             // Array of antecedent nodes of the node
+	int degree;                   // Number of antecedents
+} GraphNode;
+
+/** Data structure for implication graphs */
+typedef struct Graph {
+	GraphNode **nodes;            // Nodes of the graph
+	int size;                     // Maximum number of nodes
+} Graph;
 
 
 
@@ -97,3 +113,11 @@ typedef struct Action {
 
 /** Initialiaze a new interpretation */
 void init_interpretation(Interpretation *I, int length);
+/** Initializa a new action */
+void init_action(Action *actions);
+/** Initialize a new implication graph */
+void init_graph(Graph *G, int size);
+/** Add a new node into a graph */
+int add_graph_node(Graph *G, Atom atom, Bool value, Decision decision, Clause *clause);
+/** Set the value of a graph node */
+int set_graph_node(Graph *G, Atom atom, Bool value);
