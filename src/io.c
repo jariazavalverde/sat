@@ -3,7 +3,7 @@
  * FILENAME: io.c
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 09.10.2018
+ * DATE: 12.10.2018
  * 
  *H*/
 
@@ -40,6 +40,7 @@ int dimacs_read_file(char *path, Formula *F) {
         return 2;
     F->selected_atom = -1;
     F->length = nbclauses;
+    F->size = nbclauses;
     F->variables = nbvar;
     F->lst_clauses = NULL;
     F->lst_unitaries = NULL;

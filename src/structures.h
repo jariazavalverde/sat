@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Data structures for SAT problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 09.10.2018
+ * DATE: 12.10.2018
  * 
  *H*/
 
@@ -60,6 +60,7 @@ typedef struct Formula {
     ClauseNode **arr_clauses;     // Array of clauses
     ClauseNode *lst_clauses;      // Linked-list of clauses
     int length;                   // Number of clauses in the list
+    int size;                     // Total number of clauses
     int variables;                // Number of unique variables
     int *sat_clauses;             // Satisfiable clauses
     Literal *attempts;            // Control for backtracking
@@ -103,6 +104,7 @@ typedef struct GraphNode {
 typedef struct Graph {
 	GraphNode **nodes;            // Nodes of the graph
 	int size;                     // Maximum number of nodes
+	int max_level;                // Maximum level assigned
 } Graph;
 
 
@@ -118,6 +120,6 @@ void init_action(Action *actions);
 /** Initialize a new implication graph */
 void init_graph(Graph *G, int size);
 /** Add a new node into a graph */
-int add_graph_node(Graph *G, Atom atom, Bool value, Decision decision, Clause *clause);
+int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision, Clause *clause);
 /** Set the value of a graph node */
 int set_graph_node(Graph *G, Atom atom, Bool value);

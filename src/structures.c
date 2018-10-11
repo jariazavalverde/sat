@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Operations with structures for SAT problem
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 09.10.2018
+ * DATE: 12.10.2018
  * 
  *H*/
 
@@ -30,12 +30,13 @@ void init_action(Action *actions) {
 void init_graph(Graph *G, int size) {
 	G->nodes = malloc((size+1)*sizeof(GraphNode));
 	G->size = size;
+	G->max_level = 0;
 	for(; size >= 0; size--)
 		G->nodes[size] = NULL;
 }
 
 /** Add a new node into a graph */
-int add_graph_node(Graph *G, Atom atom, Bool value, Decision decision, Clause *clause) {
+int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision, Clause *clause) {
 	int index = decision == CONFLICTIVE ? G->size : atom;
 	int i, j = 0, degree = clause == NULL ? 0 : clause->size-1;
 	if(G->nodes[index] != NULL)
@@ -46,6 +47,7 @@ int add_graph_node(Graph *G, Atom atom, Bool value, Decision decision, Clause *c
 	node->value = value;
 	node->decision = decision;
 	node->degree = degree;
+	node->level = level;
 	node->antecedents = malloc(degree*sizeof(int));
 	if(clause != NULL)
 		for(i = 0; i <= degree; i++) {
