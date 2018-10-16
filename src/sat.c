@@ -158,13 +158,14 @@ Atom analyze_conflict(Formula *F, Graph *G, Interpretation *I, Action *actions) 
 	ClauseNode *clause_node, *unitary, *occurrence;
 	LiteralNode *literal_node = NULL, *first_literal_node = NULL, *last_literal_node = NULL, *prev, *next;
 	LiteralNode **arr_literals = malloc(F->variables * sizeof(LiteralNode*));
+	GraphNode *node;
 	Atom atom, resolvent;
 	int i, level, length, degree, match;
 	// Initialize array of literals
 	for(i = 0; i < F->variables; i++)
 		arr_literals[i] = NULL;
 	// Get conflictive clause
-	GraphNode *node = G->nodes[G->size];
+	node = G->nodes[G->size];
 	degree = node->degree;
 	length = degree;
 	level = node->level;
@@ -255,8 +256,8 @@ Atom analyze_conflict(Formula *F, Graph *G, Interpretation *I, Action *actions) 
 		F->lst_unitaries->prev = unitary;
 	F->lst_unitaries = unitary;*/
 	// Find atom to backjump
+	level = 0;
 	literal_node = last_literal_node;
-	match = 0;
 	for(i = 0; i < length; i++) {
 		clause->literals[i] = literal_node->atom;
 		// Occurrence clause node
@@ -268,14 +269,18 @@ Atom analyze_conflict(Formula *F, Graph *G, Interpretation *I, Action *actions) 
 			F->occurrences[literal_node->atom]->prev = occurrence;
 		F->occurrences[literal_node->atom] = occurrence;
 		// Update level
-		if(!match && arr_literals[literal_node->atom] != NULL && G->nodes[literal_node->atom]->decision == ARBITRARY)  {
-			level = G->nodes[literal_node->atom]->level;
+		node = G->nodes[literal_node->atom];
+		if(node->decision == ARBITRARY && node->level >= level)  {
+			level = node->level;
 			atom = literal_node->atom;
-			match = 1;
-		// Append action
-		} else {
-			push_action_after(actions, clause, literal_node->atom, literal_node->literal == NEGATIVE ? TRUE : FALSE);
 		}
+		literal_node = literal_node->next;
+	}
+	// Append actions
+	literal_node = last_literal_node;
+	for(i = 0; i < length; i++) {
+		if(literal_node->atom != atom)
+			push_action_after(actions, clause, literal_node->atom, literal_node->literal == NEGATIVE ? TRUE : FALSE);
 		literal_node = literal_node->next;
 	}
 	write_clause(clause_node);
