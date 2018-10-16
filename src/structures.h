@@ -81,12 +81,14 @@ typedef struct ActionNode {
 	Clause *clause;               // Clause removed
 	Atom atom;                    // Atom
 	Literal literal;              // Literal
+	struct ActionNode *next;      // Next node
 	struct ActionNode *prev;      // Previous node
 } ActionNode;
 
 /** Data structures for record actions */
 typedef struct Action {
 	ActionNode *first;            // First node
+	ActionNode **decisions;       // Array of pointer to decision nodes
 	int length;                   // Number of nodes
 } Action;
 
@@ -116,7 +118,7 @@ typedef struct Graph {
 /** Initialiaze a new interpretation */
 void init_interpretation(Interpretation *I, int length);
 /** Initializa a new action */
-void init_action(Action *actions);
+void init_action(Action *actions, int size);
 /** Initialize a new implication graph */
 void init_graph(Graph *G, int size);
 /** Add a new node into a graph */

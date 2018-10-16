@@ -20,7 +20,7 @@ int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions);
 /** Split cases */
 int split_cases(Formula *F, Graph *G, Interpretation *I, Action *actions);
 /** Analyze the conflict in the implication graph */
-Atom analyze_conflict(Formula *F, Graph *G);
+Atom analyze_conflict(Formula *F, Graph *G, Interpretation *I, Action *actions);
 /** Remove a clause from a formula */
 void remove_clause(Formula *F, Action *actions, Clause *clause, Atom atom);
 /** Remove a literal from a clause */
@@ -33,6 +33,8 @@ void add_clause(Formula *F, Clause *clause);
 void add_literal(Formula *F, Clause *clause, Atom atom, Literal literal);
 /** Prepend a new action */
 void push_action(Action *actions, Clause *clause, Atom atom, Literal literal);
+/** Prepend a new action after assignment */
+void push_action_after(Action *actions, Clause *clause, Atom atom, Literal literal);
 /** Add unitary clause */
 void add_unitary_clause(Formula *F, int clause_id);
 /** Perform a backtracking */

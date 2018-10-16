@@ -21,9 +21,13 @@ void init_interpretation(Interpretation *I, int length) {
 }
 
 /** Initializa a new action */
-void init_action(Action *actions) {
+void init_action(Action *actions, int size) {
+	int i;
 	actions->first = NULL;
+	actions->decisions = malloc(size*sizeof(ActionNode*));
 	actions->length = 0;
+	for(i = 0; i < size; i++)
+		actions->decisions[i] = NULL;
 }
 
 /** Initialize a new implication graph */
@@ -38,7 +42,7 @@ void init_graph(Graph *G, int size) {
 /** Add a new node into a graph */
 int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision, Clause *clause) {
 	int index = decision == CONFLICTIVE ? G->size : atom;
-	int i, j = 0, degree = clause == NULL ? 0 : clause->size-1;
+	int i, degree = clause == NULL || decision == ARBITRARY ? 0 : clause->size;
 	if(G->nodes[index] != NULL)
 		return 0;
 	GraphNode *node = malloc(sizeof(GraphNode));
@@ -50,12 +54,8 @@ int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision
 	node->level = level;
 	node->antecedents = malloc(degree*sizeof(int));
 	if(clause != NULL)
-		for(i = 0; i <= degree; i++) {
-			if(clause->literals[i] != atom) {
-				node->antecedents[j] = clause->literals[i];
-				j++;
-			}
-		}
+		for(i = 0; i < degree; i++)
+			node->antecedents[i] = clause->literals[i];
 	return 1;
 }
 
