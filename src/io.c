@@ -3,7 +3,7 @@
  * FILENAME: io.c
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 12.10.2018
+ * UPDATED: 17.10.2018
  * 
  *H*/
 
@@ -48,10 +48,8 @@ int dimacs_read_file(char *path, Formula *F) {
     F->occurrences = malloc(nbvar*sizeof(ClauseNode*));
     F->arr_clauses = malloc(nbclauses*sizeof(ClauseNode*));
     F->arr_unitaries = malloc(nbclauses*sizeof(ClauseNode*));
-    F->attempts = malloc(nbvar*sizeof(Literal));
     for(i = 0; i < nbvar; i++) {
         F->occurrences[i] = NULL;
-        F->attempts[i] = NONE;
     }
     // Read clauses
     for(i = 0; i < nbclauses; i++) {
@@ -131,16 +129,16 @@ int dimacs_read_file(char *path, Formula *F) {
 void write_formula(Formula *F) {
     ClauseNode *clause_node = F->lst_clauses;
     while(clause_node != NULL) {
-        write_clause(clause_node);
+        write_clause(clause_node->clause);
         clause_node = clause_node->next;
     }
 }
 
 /** Write a clause for the stardard output */
-void write_clause(ClauseNode *clause_node) {
+void write_clause(Clause *clause) {
     LiteralNode *literal_node;
     printf("( ");
-	literal_node = clause_node->clause->lst_literals;
+	literal_node = clause->lst_literals;
 	while(literal_node != NULL) {
 		write_literal(literal_node->atom, literal_node->literal);
 		literal_node = literal_node->next;

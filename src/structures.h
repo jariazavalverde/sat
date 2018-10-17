@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Data structures for SAT problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 12.10.2018
+ * UPDATED: 17.10.2018
  * 
  *H*/
 
@@ -63,7 +63,6 @@ typedef struct Formula {
     int size;                     // Total number of clauses
     int variables;                // Number of unique variables
     int *sat_clauses;             // Satisfiable clauses
-    Literal *attempts;            // Control for backtracking
     ClauseNode **arr_unitaries;   // Array of one-literal clauses
     ClauseNode *lst_unitaries;    // Linked-list of one-literal clauses
     ClauseNode **occurrences;     // Clauses where occurs each variable
@@ -98,7 +97,7 @@ typedef struct GraphNode {
 	Bool value;                   // Value for the atom
 	Decision decision;            // Kind of decision
 	int level;                    // Decision level
-	int *antecedents;             // Array of antecedent nodes of the node
+	Clause *antecedents;          // Array of antecedent nodes of the node
 	int degree;                   // Number of antecedents
 } GraphNode;
 

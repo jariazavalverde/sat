@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Operations with structures for SAT problem
  * AUTHORS: José Antonio Riaza Valverde
- * DATE: 12.10.2018
+ * UPDATED: 17.10.2018
  * 
  *H*/
 
@@ -52,10 +52,7 @@ int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision
 	node->decision = decision;
 	node->degree = degree;
 	node->level = level;
-	node->antecedents = malloc(degree*sizeof(int));
-	if(clause != NULL)
-		for(i = 0; i < degree; i++)
-			node->antecedents[i] = clause->literals[i];
+	node->antecedents = clause;
 	return 1;
 }
 
