@@ -1,0 +1,142 @@
+body {
+	background-color: #fafafa;
+	color: #24292e;
+	font-family: 'Open Sans', 'arial', 'verdana';
+	font-size: 18px;
+	padding: 0px;
+	margin: 0px;
+}
+
+a {
+	color: #243144;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus {
+	outline: none !important;
+}
+
+h1, h2 {
+	margin: 0px;
+	padding: 0px;
+}
+
+h1 > i {
+	display: none !important;
+}
+
+h1:hover > i {
+	display: inline !important;
+}
+
+h2 {
+	margin-bottom: 10px;
+}
+
+footer {
+	color: #53565a;
+	font-size: 90%;
+	text-align: center;
+}
+
+footer > p {
+	margin: 0px;
+	padding: 2px;
+}
+
+.big {
+	font-size: 150%;
+}
+
+.columns {
+	overflow: hidden;
+}
+
+.columns > div {
+	float: left;
+	width: 50%;
+}
+
+.column-left > div {
+	padding-right: 10px;
+}
+
+.column-right > div {
+	padding-left: 10px;
+}
+
+.container {
+	background-color: #ffffff;
+	border: 1px solid #dfdfdf;
+	box-shadow: 0px 2px 2px #efefef;
+	margin: 20px;
+	padding: 20px;
+}
+
+.container-header {
+	border-bottom: 3px solid #243144;
+	color: #243144;
+	margin-bottom: 20px;
+	padding: 10px 0px;
+}
+
+.button {
+	background-color: #f1f7ff;
+	border: 1px solid #243144;
+	border-radius: 2px;
+	box-shadow: 0px 5px 0px #f1f7ff;
+	color: #243144;
+	cursor: pointer;
+	display: block;
+	font-family: 'Open Sans', 'arial', 'verdana';
+	font-size: 18px;
+	font-weight: bold;
+	margin-top: 20px;
+	padding: 10px 30px 10px 20px;
+}
+
+.button:hover {
+	background-color: #243144;
+	color: #f1f7ff;
+}
+
+.samples-list {
+	list-style-type: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+.samples-list > li {
+	margin: 0px;
+	padding: 0px;
+}
+
+.samples-list > li > a {
+	display: block;
+	padding: 5px;
+}
+
+.samples-list > li > a > span {
+	background-color: #e1ecec;
+	padding: 0px 5px;
+}
+
+#problem {
+	border: 1px solid #243144;
+	border-radius: 2px;
+	box-shadow: inset 0px 5px 0px #f1f7ff;
+	box-sizing: border-box;
+	color: #243144;
+	display: block;
+	font-family: 'monospace', 'courier', 'Open Sans', 'arial', 'verdana';
+	font-size: 18px;
+	height: 500px;
+	padding: 10px;
+	resize: vertical;
+	width: 100%;
+}
+
