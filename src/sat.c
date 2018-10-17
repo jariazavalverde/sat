@@ -92,14 +92,17 @@ int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions) {
 			clause = clause_node->clause;
 			literal_node = clause->lst_literals;
 			atom = literal_node->atom;
-			value = literal_node->literal == NEGATIVE ? FALSE : TRUE;
-			// Push action
-			push_action(actions, NULL, atom, NONE);
-			// Add graph node
-			add_graph_node(G, atom, value, G->max_level, FORCED, clause);
-			// Replace variable
-			if(replace_variable(F, G, I, actions, atom, value) == 0)
-				return 0;
+			// Check if variable has value
+			if(I->bindings[atom] == UNKNOWN) {
+				value = literal_node->literal == NEGATIVE ? FALSE : TRUE;
+				// Push action
+				push_action(actions, NULL, atom, NONE);
+				// Add graph node
+				add_graph_node(G, atom, value, G->max_level, FORCED, clause);
+				// Replace variable
+				if(replace_variable(F, G, I, actions, atom, value) == 0)
+					return 0;
+			}
 			clause_node = next;
 		}
 	}
@@ -374,20 +377,22 @@ void push_action(Action *actions, Clause *clause, Atom atom, Literal literal) {
 
 /** Prepend a new action after assignment */
 void push_action_after(Action *actions, Clause *clause, Atom atom, Literal literal) {
-    ActionNode *action, *assign, *prev = NULL;
+    ActionNode *action, *assign, *next = NULL;
     assign = actions->decisions[atom];
     if(assign != NULL)
-		prev = assign->prev;
+		next = assign->next;
     action = malloc(sizeof(ActionNode));
     action->clause = clause;
     action->atom = atom;
     action->literal = literal;
     actions->length++;
-    action->prev = prev;
-    action->next = assign;
-	assign->prev = action;
-	if(prev != NULL)
-		prev->next = action;
+    action->next = next;
+    action->prev = assign;
+	assign->next = action;
+	if(next != NULL)
+		next->prev = action;
+	else
+		actions->first = action;
     if(clause == NULL)
 		actions->decisions[atom] = action;
 }
@@ -400,7 +405,7 @@ int backtracking(Formula *F, Graph *G, Interpretation *I, Clause *clause, Action
     // Remove conflictive node
     G->nodes[G->size] = NULL;
     // Pull actions
-    while(action != NULL && (clause->length != 1 || clause->arr_literals[action->atom] == NULL) ) {
+    while(action != NULL && (clause->length != 1 || clause->arr_literals[action->atom] == NULL || clause->lst_literals->atom == action->atom) ) {
         if(action->clause != NULL) {
             // Restore clause
             if(action->literal == NONE) add_clause(F, action->clause);
@@ -421,6 +426,7 @@ int backtracking(Formula *F, Graph *G, Interpretation *I, Clause *clause, Action
         actions->length--;
     }
     actions->first = action;
-    action->next = NULL;
+    if(action != NULL)
+		action->next = NULL;
 	return 1;
 }
