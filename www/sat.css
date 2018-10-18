@@ -1,6 +1,6 @@
 body {
 	background-color: #fafafa;
-	color: #24292e;
+	color: #53565a;
 	font-family: 'Open Sans', 'arial', 'verdana';
 	font-size: 18px;
 	padding: 0px;
@@ -20,26 +20,37 @@ a:focus {
 	outline: none !important;
 }
 
-h1, h2 {
+h1, h2, h3 {
 	margin: 0px;
 	padding: 0px;
 }
 
-h1 > i {
+h1 {
+	font-weight: normal;
+	margin-left: 20px;
+	margin-top: 20px;
+}
+
+h2 > a:hover {
+	text-decoration: none !important;
+}
+
+h2 > a > i {
 	display: none !important;
 }
 
-h1:hover > i {
+h2 > a:hover > i {
 	display: inline !important;
 }
 
-h2 {
+h3 {
 	margin-bottom: 10px;
 }
 
 footer {
 	color: #53565a;
 	font-size: 90%;
+	margin-bottom: 20px;
 	text-align: center;
 }
 
@@ -49,7 +60,7 @@ footer > p {
 }
 
 .big {
-	font-size: 150%;
+	font-size: 140%;
 }
 
 .columns {
@@ -117,12 +128,22 @@ footer > p {
 
 .samples-list > li > a {
 	display: block;
-	padding: 5px;
+	padding: 7px 20px;
+}
+
+.samples-list > li > a {
+	text-decoration: none;
 }
 
 .samples-list > li > a > span {
 	background-color: #e1ecec;
-	padding: 0px 5px;
+	border-radius: 15px;
+	padding: 0px 10px;
+}
+
+.samples-list > li > a:hover > span {
+	background-color: #243144;
+	color: #ffffff;
 }
 
 #problem {
@@ -140,3 +161,8 @@ footer > p {
 	width: 100%;
 }
 
+#result {
+	font-weight: bold;
+	text-align: justify;
+	 word-spacing: 5px;
+}
