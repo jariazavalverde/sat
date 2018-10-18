@@ -56,11 +56,7 @@ footer {
 
 footer > p {
 	margin: 0px;
-	padding: 2px;
-}
-
-.big {
-	font-size: 140%;
+	padding: 5px;
 }
 
 .columns {
@@ -164,5 +160,5 @@ footer > p {
 #result {
 	font-weight: bold;
 	text-align: justify;
-	 word-spacing: 5px;
+	word-spacing: 5px;
 }

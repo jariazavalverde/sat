@@ -21,13 +21,13 @@
 			<div class="columns">
 				<div class="column-left"><div>
 					<form action="./#output" method="POST">
-						<textarea id="problem" name="problem" placeholder="Your SAT program here..."><?php
-if(isset($_GET["sample"]) && file_exists("sample/" . $_GET["sample"]))
+						<textarea id="problem" name="problem" title="SAT program" placeholder="Your SAT program here..."><?php
+if(isset($_GET["sample"]) && strrpos($_GET["sample"], "/") == false && file_exists("sample/" . $_GET["sample"]))
 	echo file_get_contents("sample/" . $_GET["sample"]);
 else if(isset($_POST["problem"]))
 	echo $_POST["problem"];
 ?></textarea>
-						<button class="button" type="submit">
+						<button class="button" type="submit" title="Solve it!">
 							<i class="fas fa-cogs"></i> &nbsp; Solve it!
 						</button>
 					</form>
@@ -63,9 +63,9 @@ else
 			</div>
 		</div>
 		<footer>
-			<p><i class="far fa-copyright"></i> 2018 <a href="http://jariaza.es" target="_blank">José Antonio Riaza Valverde</a> | <i class="fas fa-university"></i> <a href="http://uclm.es" target="_blank">University of Castilla-La Mancha</a>, <a href="dectau.uclm.es">DEC-Tau</a> research group</p>
+			<p><i class="far fa-copyright"></i> 2018 <a href="http://jariaza.es" title="jariaza.es" target="_blank">José Antonio Riaza Valverde</a> | <i class="fas fa-university"></i> <a href="http://uclm.es" target="_blank">University of Castilla-La Mancha</a>, <a href="dectau.uclm.es">DEC-Tau</a> research group</p>
 			<p><i class="fas fa-balance-scale"></i> Released under the <a href="https://github.com/jariazavalverde/sat/blob/master/LICENSE" target="_blank">BSD-3 Clause license</a> | <i class="fas fa-font"></i> Uses <a href="https://fonts.google.com/specimen/Open+Sans" target="_blank" rel="nofollow">Open Sans font</a> and <a href="https://fontawesome.com/" target="_blank" rel="nofollow">Font Awesome</a></p>
-			<p class="big"><a href="https://twitter.com/jariazavalverde" target="_blank"><i class="fab fa-twitter"></i> jariazavalverde</a> | <a href="https://github.com/jariazavalverde/sat" target="_blank"><i class="fab fa-github"></i> Fork on GitHub</a></p>
+			<p><i class="fas fa-link"></i> <a href="http://jariaza.es" title="jariaza.es" target="_blank">jariaza.es</a> | <i class="fab fa-twitter"></i> <a href="https://twitter.com/jariazavalverde" title="Twitter" target="_blank">@jariazavalverde</a> | <i class="fab fa-github"></i> <a href="https://github.com/jariazavalverde/sat" title="GitHub" target="_blank">jariazavalverde/sat</a></p>
 		</footer>
 	</body>
 </html>
