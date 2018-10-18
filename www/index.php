@@ -18,9 +18,9 @@
 			<header class="container-header">
 				<h2 id="input"><a href="#input"><i class="fas fa-hashtag"></i> Input</a></h2>
 			</header>
-			<div class="columns">
-				<div class="column-left"><div>
-					<form action="./#output" method="POST">
+			<form action="./#output" method="POST">
+				<div class="columns">
+					<div class="column-left"><div>
 						<textarea id="problem" name="problem" title="SAT program" placeholder="Your SAT program here..."><?php
 if(isset($_GET["sample"]) && strrpos($_GET["sample"], "/") == false && file_exists("sample/" . $_GET["sample"]))
 	echo file_get_contents("sample/" . $_GET["sample"]);
@@ -30,19 +30,23 @@ else if(isset($_POST["problem"]))
 						<button class="button" type="submit" title="Solve it!">
 							<i class="fas fa-cogs"></i> &nbsp; Solve it!
 						</button>
-					</form>
-				</div></div>
-				<div class="column-right"><div>
-					<h3><i class="fas fa-flask"></i> Examples</h3>
-						<ul class="samples-list">
+					</div></div>
+					<div class="column-right"><div>
+						<h3><i class="fas fa-list-alt"></i> Options</h3>
+						<div class="option"><input type="checkbox" name="info" id="info" <?php if(isset($_POST["info"])) echo "checked=\"checked\""; ?> /> <label for="info"><i class="fas fa-info-circle"></i> Show information <span class="legend">(formula, number of variables and number of clauses)</span></label></div>
+						<div class="option"><input type="checkbox" name="time" id="time" <?php if(isset($_POST["time"])) echo "checked=\"checked\""; ?> /> <label for="time"><i class="fas fa-clock"></i> Show execution time <span class="legend">(in seconds)</span></label></div>
+						<br />
+						<h3><i class="fas fa-flask"></i> Sample problems</h3>
+							<ul class="samples-list">
 <?php
 foreach(scandir("sample") as $f)
 	if($f != "." && $f != "..")
-		echo "\t\t\t\t\t\t\t<li><a href=\"./?sample=$f\"><i class=\"fas fa-file\"></i> <span>$f</span></a></li>\n";
+		echo "\t\t\t\t\t\t\t\t<li><i class=\"fas fa-file\"></i> <a href=\"./?sample=$f\"><span>$f</span></a></li>\n";
 ?>
-						</ul>
-				</div></div>
-			</div>
+							</ul>
+					</div></div>
+				</div>
+			</form>
 <?php if(isset($_POST["problem"])) { ?>
 			<br />
 			<header class="container-header">
@@ -50,10 +54,13 @@ foreach(scandir("sample") as $f)
 			</header>
 			<div id="result">
 <?php
+$options = "";
+if(isset($_POST["info"])) $options .= " -i";
+if(isset($_POST["time"])) $options .= " -t";
 $f = fopen("sat.cnf", "w");
 fwrite($f, $_POST["problem"]);
 fclose($f);
-$result = shell_exec("timeout 3s ./sat sat.cnf");
+$result = shell_exec("timeout 3s ./sat sat.cnf $options");
 if($result)
 	echo "<p>" . str_replace("\n", "</p><p>", $result) . "</p>";
 else

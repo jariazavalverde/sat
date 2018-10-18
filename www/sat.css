@@ -59,6 +59,17 @@ footer > p {
 	padding: 5px;
 }
 
+.legend {
+	font-size: 80%;
+	font-style: oblique;
+	display: block;
+	margin-left: 30px;
+}
+
+.option {
+	margin-bottom: 10px;
+}
+
 .columns {
 	overflow: hidden;
 }
@@ -114,32 +125,13 @@ footer > p {
 .samples-list {
 	list-style-type: none;
 	margin: 0px;
+	margin-left: 30px;
 	padding: 0px;
 }
 
 .samples-list > li {
 	margin: 0px;
-	padding: 0px;
-}
-
-.samples-list > li > a {
-	display: block;
-	padding: 7px 20px;
-}
-
-.samples-list > li > a {
-	text-decoration: none;
-}
-
-.samples-list > li > a > span {
-	background-color: #e1ecec;
-	border-radius: 15px;
-	padding: 0px 10px;
-}
-
-.samples-list > li > a:hover > span {
-	background-color: #243144;
-	color: #ffffff;
+	padding: 2px 0px;
 }
 
 #problem {
