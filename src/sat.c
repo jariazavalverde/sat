@@ -80,20 +80,20 @@ int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions) {
     Clause *clause;
     Atom atom;
     Bool value;
-    while(F->lst_unitaries != NULL) {
-		clause_node = F->lst_unitaries;
+    int change = 1;
+    while(change) {
+		change = 0;
+		clause_node = F->lst_clauses;
 		F->lst_unitaries = NULL;
 		// Iterate unitary clauses
 		while(clause_node != NULL) {
 			// Update unitary nodes
-			next = clause_node->next;
-			clause_node->prev = NULL;
-			clause_node->next = NULL;
 			clause = clause_node->clause;
 			literal_node = clause->lst_literals;
 			atom = literal_node->atom;
 			// Check if variable has value
-			if(I->bindings[atom] == UNKNOWN) {
+			if(F->sat_clauses[clause->id] == 0 && clause->length == 1 && I->bindings[atom] == UNKNOWN) {
+				change = 1;
 				value = literal_node->literal == NEGATIVE ? FALSE : TRUE;
 				// Push action
 				push_action(actions, NULL, atom, NONE);
@@ -103,7 +103,7 @@ int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions) {
 				if(replace_variable(F, G, I, actions, atom, value) == 0)
 					return 0;
 			}
-			clause_node = next;
+			clause_node = clause_node->next;
 		}
 	}
     return 1;
@@ -215,6 +215,7 @@ Clause *analyze_conflict(Formula *F, Graph *G, Interpretation *I, Action *action
 	clause->lst_literals = NULL;
 	clause->length = 0;
 	clause->size = length;
+	clause->lst_literals = NULL;
 	// Create clause node
 	clause_node = malloc(sizeof(ClauseNode));
 	clause_node->clause = clause;
