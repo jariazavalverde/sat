@@ -14,12 +14,12 @@
 
 
 /** Read a formula in DIMACS format */
-int dimacs_read_file(char *path, Formula *F);
+Formula *formula_read_dimacs(char *path);
 /** Write a formula for the stardard output */
-void write_formula(Formula *F);
+void formula_write(Formula *F);
 /** Write a clause for the stardard output */
-void write_clause(Clause *clause);
+void clause_write(Clause *clause);
 /** Write a literal for the stardard output */
-void write_literal(Atom atom, Literal literal);
+void literal_write(Atom atom, Literal literal);
 /** Write a interpretation for the stardard output */
-void write_interpretation(Interpretation *I);
+void formula_write_interpretation(Formula *F);

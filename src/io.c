@@ -12,7 +12,8 @@
 
 
 /** Read a formula in DIMACS format */
-int dimacs_read_file(char *path, Formula *F) {
+Formula *formula_read_dimacs(char *path) {
+	Formula *F;
     FILE *file;
     int i, j, length, var, nbvar, nbclauses;
     char ch;
@@ -25,7 +26,7 @@ int dimacs_read_file(char *path, Formula *F) {
     file = fopen(path, "r");
     // If file not exists, error
     if(!file)
-        return 1;
+        return NULL;
     // Drop comments
     ch = fgetc(file);
     while(ch == 'c') {
@@ -37,36 +38,19 @@ int dimacs_read_file(char *path, Formula *F) {
         ch = fgetc(file);
     // Read header
     if(ch != 'p' || fscanf(file, " cnf %d %d\n", &nbvar, &nbclauses) != 2)
-        return 2;
-    F->selected_atom = -1;
-    F->length = nbclauses;
-    F->size = nbclauses;
-    F->original_size = nbclauses;
-    F->alloc_size = nbclauses;
-    F->variables = nbvar;
-    F->lst_clauses = NULL;
-    F->lst_unitaries = NULL;
-    F->sat_clauses = malloc(nbclauses * sizeof(int));
-    F->occurrences = malloc(nbvar * sizeof(ClauseNode*));
-    F->arr_clauses = malloc(nbclauses * sizeof(ClauseNode*));
-    F->arr_unitaries = malloc(nbclauses * sizeof(ClauseNode*));
-    for(i = 0; i < nbvar; i++) {
-        F->occurrences[i] = NULL;
-    }
+        return NULL;
+    // Create formula
+    F = formula_alloc(nbvar, nbclauses);
     // Read clauses
     for(i = 0; i < nbclauses; i++) {
 		F->sat_clauses[i] = 0;
         length = 0;
         last_clause_node = clause_node;
-        clause = malloc(sizeof(Clause));
-        clause->arr_literals = malloc(nbvar*sizeof(LiteralNode*));
-        clause_node = malloc(sizeof(ClauseNode));
+        clause = clause_alloc(nbvar);
         clause->id = i;
-        clause->lst_literals = NULL;
+        clause_node = malloc(sizeof(ClauseNode));
         literal_node = NULL;
         F->arr_clauses[i] = clause_node;
-        for(j = 0; j < nbvar; j++)
-            clause->arr_literals[j] = NULL;
         if(F->lst_clauses == NULL)
             F->lst_clauses = clause_node;
         while(fscanf(file, "%d", &var) == 1 && var != 0) {
@@ -97,7 +81,7 @@ int dimacs_read_file(char *path, Formula *F) {
         }
         clause->length = length;
         clause->size = length;
-        clause->literals = malloc(length*sizeof(int));
+        clause->literals = malloc(length * sizeof(int));
         literal_node = clause->lst_literals;
         for(j = 0; j < length; j++) {
 			clause->literals[j] = literal_node->atom;
@@ -124,41 +108,41 @@ int dimacs_read_file(char *path, Formula *F) {
     }
     // Close file
     fclose(file);
-    return 0;
+    return F;
 }
 
 /** Write a formula for the stardard output */
-void write_formula(Formula *F) {
+void formula_write(Formula *F) {
     ClauseNode *clause_node = F->lst_clauses;
     while(clause_node != NULL) {
-        write_clause(clause_node->clause);
+        clause_write(clause_node->clause);
         clause_node = clause_node->next;
     }
 }
 
 /** Write a clause for the stardard output */
-void write_clause(Clause *clause) {
+void clause_write(Clause *clause) {
     LiteralNode *literal_node;
     printf("( ");
 	literal_node = clause->lst_literals;
 	while(literal_node != NULL) {
-		write_literal(literal_node->atom, literal_node->literal);
+		literal_write(literal_node->atom, literal_node->literal);
 		literal_node = literal_node->next;
 	}
 	printf(")");
 }
 
 /** Write a literal for the stardard output */
-void write_literal(Atom atom, Literal literal) {
+void literal_write(Atom atom, Literal literal) {
     printf(literal == NEGATIVE ? "-%d " : "%d ", atom+1);
 }
 
 /** Write a interpretation for the stardard output */
-void write_interpretation(Interpretation *I) {
+void formula_write_interpretation(Formula *F) {
     int i;
     Bool value;
-    for(i = 0; i < I->length; i++) {
-        value = I->bindings[i];
+    for(i = 0; i < F->variables; i++) {
+        value = F->interpretation[i];
         if(value == TRUE)
             printf("%d ", i+1);
         else if(value == FALSE)

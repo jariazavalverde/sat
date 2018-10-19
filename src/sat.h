@@ -12,15 +12,15 @@
 
 
 /** Check satisfiability of a formula */
-int check_sat(Formula *F, Interpretation *I);
+int check_sat(Formula *F);
 /** Propagate a value of a variable */
-int replace_variable(Formula *F, Graph *G, Interpretation *I, Action *actions, Atom atom, Bool value);
+int replace_variable(Formula *F, Graph *G, Action *actions, Atom atom, Bool value);
 /** Unit propagation */
-int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions);
+int unit_propagation(Formula *F, Graph *G, Action *actions);
 /** Split cases */
-int split_cases(Formula *F, Graph *G, Interpretation *I, Action *actions);
+int split_cases(Formula *F, Graph *G, Action *actions);
 /** Analyze the conflict in the implication graph */
-Clause *analyze_conflict(Formula *F, Graph *G, Interpretation *I, Action *actions);
+Clause *analyze_conflict(Formula *F, Graph *G, Action *actions);
 /** Remove a clause from a formula */
 void remove_clause(Formula *F, Action *actions, Clause *clause, Atom atom);
 /** Remove a literal from a clause */
@@ -38,4 +38,4 @@ void push_action_after(Action *actions, Clause *clause, Atom atom, Literal liter
 /** Add unitary clause */
 void add_unitary_clause(Formula *F, int clause_id);
 /** Perform a backtracking */
-int backtracking(Formula *F, Graph *G, Interpretation *I, Clause *clause, Action *actions);
+int backtracking(Formula *F, Graph *G, Clause *clause, Action *actions);

@@ -11,13 +11,57 @@
 
 
 
-/** Initialiaze a new interpretation */
-void init_interpretation(Interpretation *I, int length) {
-    int i;
-    I->length = length;
-    I->bindings = malloc(length*sizeof(Bool));
-    for(i = 0; i < length; i++)
-        I->bindings[i] = UNKNOWN;
+/**
+  * 
+  * This function creates a formula of $nbvar variables and $nbclauses
+  * clauses, returning a pointer to a newly initialized Formula struct.
+  * 
+  **/
+Formula *formula_alloc(int nbvar, int nbclauses) {
+	int i;
+	Formula *F = malloc(sizeof(Formula));
+	F->arr_clauses = malloc(nbclauses * sizeof(ClauseNode*));
+	F->arr_unitaries = malloc(nbclauses * sizeof(ClauseNode*));
+	F->sat_clauses = malloc(nbclauses * sizeof(ClauseNode*));
+	F->occurrences = malloc(nbvar * sizeof(ClauseNode*));
+	F->interpretation = malloc(nbvar * sizeof(Bool));
+    F->lst_clauses = NULL;
+    F->lst_unitaries = NULL;
+    F->length = nbclauses;
+    F->size = nbclauses;
+    F->original_size = nbclauses;
+    F->alloc_size = nbclauses;
+    F->variables = nbvar;
+    for(i = 0; i < nbclauses; i++) {
+		F->arr_clauses[i] = NULL;
+		F->arr_unitaries[i] = NULL;
+		F->sat_clauses[i] = 0;
+	}
+	for(i = 0; i < nbvar; i++) {
+		F->occurrences[i] = NULL;
+		F->interpretation[i] = UNKNOWN;
+	}
+    return F;
+}
+
+/**
+  * 
+  * This function creates a clause of $nbvar variables, returning a
+  * pointer to a newly initialized Clause struct.
+  * 
+  **/
+Clause *clause_alloc(int nbvar) {
+	int i;
+	Clause *clause = malloc(sizeof(Clause));
+	clause->id = 0;
+	clause->arr_literals = malloc(nbvar * sizeof(LiteralNode*));
+	clause->lst_literals = NULL;
+	clause->length = 0;
+	clause->size = 0;
+	clause->literals = NULL;
+	for(i = 0; i < nbvar; i++)
+		clause->arr_literals[i] = NULL;
+	return clause;
 }
 
 /** Initializa a new action */

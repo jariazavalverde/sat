@@ -68,14 +68,8 @@ typedef struct Formula {
     ClauseNode **arr_unitaries;   // Array of one-literal clauses
     ClauseNode *lst_unitaries;    // Linked-list of one-literal clauses
     ClauseNode **occurrences;     // Clauses where occurs each variable
-    Atom selected_atom;           // Selected atom for iterate
+    Bool *interpretation;         // Array of values for interpretation
 } Formula;
-
-/** Data structure for interpretations */
-typedef struct Interpretation {
-    Bool *bindings;               // Values
-    int length;                   // Number of bindings
-} Interpretation;
 
 /** Data structures for node actions */
 typedef struct ActionNode {
@@ -116,8 +110,20 @@ typedef struct Graph {
 
 
 
-/** Initialiaze a new interpretation */
-void init_interpretation(Interpretation *I, int length);
+/**
+  * 
+  * This function creates a formula of $nbvar variables and $nbclauses
+  * clauses, returning a pointer to a newly initialized Formula struct.
+  * 
+  **/
+Formula *formula_alloc(int nbvar, int nbclauses);
+/**
+  * 
+  * This function creates a clause of $nbvar variables, returning a
+  * pointer to a newly initialized Clause struct.
+  * 
+  **/
+Clause *clause_alloc(int nbvar);
 /** Initializa a new action */
 void init_action(Action *actions, int size);
 /** Initialize a new implication graph */

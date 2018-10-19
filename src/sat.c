@@ -12,30 +12,29 @@
 
 
 /** Check satisfiability of a formula */
-int check_sat(Formula *F, Interpretation *I) {
+int check_sat(Formula *F) {
     int success = 1, decide = 1;
     Clause *clause;
     Action actions;
     Graph G;
     // Initialize structures
-    init_interpretation(I, F->variables);
     init_action(&actions, F->variables);
     init_graph(&G, F->variables);
     // Unit propagation
-    if(unit_propagation(F, &G, I, &actions) == 0)
+    if(unit_propagation(F, &G, &actions) == 0)
 		return 0;
     while(F->length > 0 && success) {
         // Split cases
         if(decide)
-			success = split_cases(F, &G, I, &actions);
+			success = split_cases(F, &G, &actions);
 		decide = 1;
         // Unit propagation
         if(success)
-			success = unit_propagation(F, &G, I, &actions);
+			success = unit_propagation(F, &G, &actions);
         // Backtracking
         if(!success && G.max_level > 0) {
-			clause = analyze_conflict(F, &G, I, &actions);
-            success = backtracking(F, &G, I, clause, &actions);
+			clause = analyze_conflict(F, &G, &actions);
+            success = backtracking(F, &G, clause, &actions);
             decide = 0;
         }
     }
@@ -43,12 +42,12 @@ int check_sat(Formula *F, Interpretation *I) {
 }
 
 /** Propagate a value of a variable */
-int replace_variable(Formula *F, Graph *G, Interpretation *I, Action *actions, Atom atom, Bool value) {
+int replace_variable(Formula *F, Graph *G, Action *actions, Atom atom, Bool value) {
     Literal literal;
     Clause *clause;
     ClauseNode *node = F->occurrences[atom];
     // Assign interpretation
-    I->bindings[atom] = value;
+    F->interpretation[atom] = value;
     // Iterate clauses containing the literal
     while(node != NULL) {
         clause = node->clause;
@@ -74,7 +73,7 @@ int replace_variable(Formula *F, Graph *G, Interpretation *I, Action *actions, A
 }
 
 /** Unit propagation */
-int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions) {
+int unit_propagation(Formula *F, Graph *G, Action *actions) {
     LiteralNode *literal_node;
     ClauseNode *clause_node, *next;
     Clause *clause;
@@ -92,7 +91,7 @@ int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions) {
 			literal_node = clause->lst_literals;
 			atom = literal_node->atom;
 			// Check if variable has value
-			if(F->sat_clauses[clause->id] == 0 && clause->length == 1 && I->bindings[atom] == UNKNOWN) {
+			if(F->sat_clauses[clause->id] == 0 && clause->length == 1 && F->interpretation[atom] == UNKNOWN) {
 				change = 1;
 				value = literal_node->literal == NEGATIVE ? FALSE : TRUE;
 				// Push action
@@ -100,7 +99,7 @@ int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions) {
 				// Add graph node
 				add_graph_node(G, atom, value, G->max_level, FORCED, clause);
 				// Replace variable
-				if(replace_variable(F, G, I, actions, atom, value) == 0)
+				if(replace_variable(F, G, actions, atom, value) == 0)
 					return 0;
 			}
 			clause_node = clause_node->next;
@@ -110,7 +109,7 @@ int unit_propagation(Formula *F, Graph *G, Interpretation *I, Action *actions) {
 }
 
 /** Split cases */
-int split_cases(Formula *F, Graph *G, Interpretation *I, Action *actions) {
+int split_cases(Formula *F, Graph *G, Action *actions) {
     Atom atom;
     Literal literal;
     Bool value;
@@ -128,7 +127,7 @@ int split_cases(Formula *F, Graph *G, Interpretation *I, Action *actions) {
 			value = literal == NEGATIVE ? FALSE : TRUE;
 			push_action(actions, NULL, atom, NONE);
 			add_graph_node(G, atom, value, G->max_level, ARBITRARY, NULL);
-			return replace_variable(F, G, I, actions, atom, value);
+			return replace_variable(F, G, actions, atom, value);
 		}
 		return 0;
     }
@@ -136,7 +135,7 @@ int split_cases(Formula *F, Graph *G, Interpretation *I, Action *actions) {
 }
 
 /** Analyze the conflict in the implication graph */
-Clause *analyze_conflict(Formula *F, Graph *G, Interpretation *I, Action *actions) {
+Clause *analyze_conflict(Formula *F, Graph *G, Action *actions) {
 	Clause *clause = malloc(sizeof(Clause));
 	ClauseNode *clause_node, *unitary, *occurrence;
 	LiteralNode *literal_node = NULL, *first_literal_node = NULL, *last_literal_node = NULL, *prev, *next;
@@ -404,7 +403,7 @@ void push_action_after(Action *actions, Clause *clause, Atom atom, Literal liter
 }
 
 /** Perform a backtracking */
-int backtracking(Formula *F, Graph *G, Interpretation *I, Clause *clause, Action *actions) {
+int backtracking(Formula *F, Graph *G, Clause *clause, Action *actions) {
     ActionNode *action = actions->first, *prev;
     Atom atom;
     Bool value;
@@ -424,7 +423,7 @@ int backtracking(Formula *F, Graph *G, Interpretation *I, Clause *clause, Action
 				G->max_level--;
 			free(G->nodes[action->atom]);
 			G->nodes[action->atom] = NULL;
-            I->bindings[action->atom] = UNKNOWN;
+            F->interpretation[action->atom] = UNKNOWN;
             actions->decisions[action->atom] = NULL;
         }
         // Update node
