@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Operations with structures for SAT problem
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 19.10.2018
+ * UPDATED: 20.10.2018
  * 
  *H*/
 
@@ -21,27 +21,27 @@ Formula *formula_alloc(int nbvar, int nbclauses) {
 	int i;
 	Formula *F = malloc(sizeof(Formula));
 	F->arr_clauses = malloc(nbclauses * sizeof(ClauseNode*));
-	F->arr_unitaries = malloc(nbclauses * sizeof(ClauseNode*));
+	F->arr_unit_clauses = malloc(nbclauses * sizeof(ClauseNode*));
 	F->sat_clauses = malloc(nbclauses * sizeof(ClauseNode*));
 	F->occurrences = malloc(nbvar * sizeof(ClauseNode*));
 	F->interpretation = malloc(nbvar * sizeof(Bool));
-    F->lst_clauses = NULL;
-    F->lst_unitaries = NULL;
-    F->length = nbclauses;
-    F->size = nbclauses;
-    F->original_size = nbclauses;
-    F->alloc_size = nbclauses;
-    F->variables = nbvar;
-    for(i = 0; i < nbclauses; i++) {
+	F->lst_clauses = NULL;
+	F->lst_unit_clauses = NULL;
+	F->length = nbclauses;
+	F->size = nbclauses;
+	F->original_size = nbclauses;
+	F->alloc_size = nbclauses;
+	F->variables = nbvar;
+	for(i = 0; i < nbclauses; i++) {
 		F->arr_clauses[i] = NULL;
-		F->arr_unitaries[i] = NULL;
+		F->arr_unit_clauses[i] = NULL;
 		F->sat_clauses[i] = 0;
 	}
 	for(i = 0; i < nbvar; i++) {
 		F->occurrences[i] = NULL;
 		F->interpretation[i] = UNKNOWN;
 	}
-    return F;
+	return F;
 }
 
 /**
@@ -108,10 +108,10 @@ void formula_free(Formula *F) {
 	int i;
 	// Free clause nodes
 	ClauseNode *clause_node, *next;
-    for(i = 0; i < F->size; i++) {
+	for(i = 0; i < F->size; i++) {
 		clause_free(F->arr_clauses[i]->clause);
 		free(F->arr_clauses[i]);
-		free(F->arr_unitaries[i]);
+		free(F->arr_unit_clauses[i]);
 	}
 	// Free clause nodes from occurrences
 	for(i = 0; i < F->variables; i++) {
@@ -123,8 +123,8 @@ void formula_free(Formula *F) {
 		}
 	}
 	// Free arrays
-    free(F->arr_clauses);
-	free(F->arr_unitaries);
+	free(F->arr_clauses);
+	free(F->arr_unit_clauses);
 	free(F->sat_clauses);
 	free(F->occurrences);
 	free(F->interpretation);
@@ -199,21 +199,21 @@ void graph_free(Graph *G) {
   * 
   **/
 void formula_retract_clause(Formula *F, Atom clause_id) {
-    ClauseNode *prev, *next;
-    // Set clause as satisfied
-    F->sat_clauses[clause_id] = 1;
-    F->length--;
-    // Retract clause node
-    prev = F->arr_clauses[clause_id]->prev;
-    next = F->arr_clauses[clause_id]->next;
-    if(prev == NULL)
-        F->lst_clauses = next;
-    else
-        prev->next = next;
-    if(next != NULL)
-        next->prev = prev;
-    // Retract unit clause
-    if(F->arr_clauses[clause_id]->clause->length == 1)
+	ClauseNode *prev, *next;
+	// Set clause as satisfied
+	F->sat_clauses[clause_id] = 1;
+	F->length--;
+	// Retract clause node
+	prev = F->arr_clauses[clause_id]->prev;
+	next = F->arr_clauses[clause_id]->next;
+	if(prev == NULL)
+		F->lst_clauses = next;
+	else
+		prev->next = next;
+	if(next != NULL)
+		next->prev = prev;
+	// Retract unit clause
+	if(F->arr_clauses[clause_id]->clause->length == 1)
 		formula_retract_unit_clause(F, clause_id);
 }
 
@@ -225,18 +225,18 @@ void formula_retract_clause(Formula *F, Atom clause_id) {
   * 
   **/
 void formula_assert_clause(Formula *F, Atom clause_id) {
-    ClauseNode *clause_node = F->arr_clauses[clause_id];
-    // Set clause as unsatisfied
-    F->sat_clauses[clause_id] = 0;
-    F->length++;
-    // Assert clause node
-    clause_node->prev = NULL;
-    clause_node->next = F->lst_clauses;
-    if(F->lst_clauses != NULL)
-        F->lst_clauses->prev = clause_node;
-    F->lst_clauses = clause_node;
-    // Assert unit clause
-    if(clause_node->clause->length == 1)
+	ClauseNode *clause_node = F->arr_clauses[clause_id];
+	// Set clause as unsatisfied
+	F->sat_clauses[clause_id] = 0;
+	F->length++;
+	// Assert clause node
+	clause_node->prev = NULL;
+	clause_node->next = F->lst_clauses;
+	if(F->lst_clauses != NULL)
+		F->lst_clauses->prev = clause_node;
+	F->lst_clauses = clause_node;
+	// Assert unit clause
+	if(clause_node->clause->length == 1)
 		formula_assert_unit_clause(F, clause_id);
 }
 
@@ -247,16 +247,16 @@ void formula_assert_clause(Formula *F, Atom clause_id) {
   * 
   **/
 void formula_retract_unit_clause(Formula *F, int clause_id) {
-	ClauseNode *unitary = F->arr_unitaries[clause_id];
-	if(F->lst_unitaries != NULL && F->lst_unitaries->clause->id == unitary->clause->id)
-		F->lst_unitaries = unitary->next;
+	ClauseNode *unit_clause = F->arr_unit_clauses[clause_id];
+	if(F->lst_unit_clauses != NULL && F->lst_unit_clauses->clause->id == unit_clause->clause->id)
+		F->lst_unit_clauses = unit_clause->next;
 	else
-		if(unitary->prev != NULL)
-			unitary->prev->next = unitary->next;
-		if(unitary->next != NULL)
-			unitary->next->prev = unitary->prev;
-	unitary->next = NULL;
-	unitary->prev = NULL;
+		if(unit_clause->prev != NULL)
+			unit_clause->prev->next = unit_clause->next;
+		if(unit_clause->next != NULL)
+			unit_clause->next->prev = unit_clause->prev;
+	unit_clause->next = NULL;
+	unit_clause->prev = NULL;
 }
 
 /**
@@ -266,12 +266,12 @@ void formula_retract_unit_clause(Formula *F, int clause_id) {
   * 
   **/
 void formula_assert_unit_clause(Formula *F, int clause_id) {
-	ClauseNode *unitary = F->arr_unitaries[clause_id];
-	if(F->lst_unitaries != NULL)
-		F->lst_unitaries->prev = unitary;
-	unitary->next = F->lst_unitaries;
-	unitary->prev = NULL;
-	F->lst_unitaries = unitary;
+	ClauseNode *unit_clause = F->arr_unit_clauses[clause_id];
+	if(F->lst_unit_clauses != NULL)
+		F->lst_unit_clauses->prev = unit_clause;
+	unit_clause->next = F->lst_unit_clauses;
+	unit_clause->prev = NULL;
+	F->lst_unit_clauses = unit_clause;
 }
 
 /**
@@ -334,17 +334,17 @@ void clause_assert_literal(Formula *F, int clause_id, Atom atom, Literal literal
   * 
   **/
 void trace_push(Trace *trace, Clause *clause, Atom atom, Literal literal) {
-    TraceNode *node = malloc(sizeof(TraceNode));
-    node->clause = clause;
-    node->atom = atom;
-    node->literal = literal;
-    node->prev = trace->lst_traces;
-    node->next = NULL;
-    if(trace->lst_traces != NULL)
+	TraceNode *node = malloc(sizeof(TraceNode));
+	node->clause = clause;
+	node->atom = atom;
+	node->literal = literal;
+	node->prev = trace->lst_traces;
+	node->next = NULL;
+	if(trace->lst_traces != NULL)
 		trace->lst_traces->next = node;
-    trace->lst_traces = node;
-    trace->length++;
-    if(clause == NULL)
+	trace->lst_traces = node;
+	trace->length++;
+	if(clause == NULL)
 		trace->decisions[atom] = node;
 }
 
@@ -359,9 +359,9 @@ void trace_push(Trace *trace, Clause *clause, Atom atom, Literal literal) {
   * 
   **/
 void trace_append(Trace *trace, Clause *clause, Atom atom, Literal literal) {
-    TraceNode *node, *assign, *next = NULL;
-    assign = trace->decisions[atom];
-    if(assign != NULL) {
+	TraceNode *node, *assign, *next = NULL;
+	assign = trace->decisions[atom];
+	if(assign != NULL) {
 		next = assign->next;
 		node = malloc(sizeof(TraceNode));
 		node->clause = clause;

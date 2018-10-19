@@ -3,7 +3,7 @@
  * FILENAME: io.c
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 19.10.2018
+ * UPDATED: 20.10.2018
  * 
  *H*/
 
@@ -20,46 +20,46 @@
   **/
 Formula *formula_fread_dimacs(FILE *stream) {
 	Formula *F;
-    int i, j, length, var, nbvar, nbclauses;
-    char ch;
-    Atom atom;
-    Clause *clause;
-    Literal literal;
-    LiteralNode *literal_node, *last_literal_node;
-    ClauseNode *clause_node = NULL, *last_clause_node, *unitaries, *occurrence;
-    // Check stream
-    if(stream == NULL)
+	int i, j, length, var, nbvar, nbclauses;
+	char ch;
+	Atom atom;
+	Clause *clause;
+	Literal literal;
+	LiteralNode *literal_node, *last_literal_node;
+	ClauseNode *clause_node = NULL, *last_clause_node, *unit_clause, *occurrence;
+	// Check stream
+	if(stream == NULL)
 		return NULL;
-    // Drop comments
-    ch = fgetc(stream);
-    while(ch == 'c') {
-        while(ch != '\n' && ch != EOF)
-            ch = fgetc(stream);
-        ch = fgetc(stream);
-    }
-    while(ch == '\n')
-        ch = fgetc(stream);
-    // Read header
-    if(ch != 'p' || fscanf(stream, " cnf %d %d\n", &nbvar, &nbclauses) != 2)
-        return NULL;
-    // Create formula
-    F = formula_alloc(nbvar, nbclauses);
-    // Read clauses
-    for(i = 0; i < nbclauses; i++) {
+	// Drop comments
+	ch = fgetc(stream);
+	while(ch == 'c') {
+		while(ch != '\n' && ch != EOF)
+			ch = fgetc(stream);
+		ch = fgetc(stream);
+	}
+	while(ch == '\n')
+		ch = fgetc(stream);
+	// Read header
+	if(ch != 'p' || fscanf(stream, " cnf %d %d\n", &nbvar, &nbclauses) != 2)
+		return NULL;
+	// Create formula
+	F = formula_alloc(nbvar, nbclauses);
+	// Read clauses
+	for(i = 0; i < nbclauses; i++) {
 		F->sat_clauses[i] = 0;
-        length = 0;
-        last_clause_node = clause_node;
-        clause = clause_alloc(nbvar);
-        clause->id = i;
-        clause_node = malloc(sizeof(ClauseNode));
-        literal_node = NULL;
-        F->arr_clauses[i] = clause_node;
-        if(F->lst_clauses == NULL)
-            F->lst_clauses = clause_node;
-        while(fscanf(stream, "%d", &var) == 1 && var != 0) {
-            atom = var > 0 ? var : -var;
-            atom--;
-            if(clause->arr_literals[atom] == NULL) {
+		length = 0;
+		last_clause_node = clause_node;
+		clause = clause_alloc(nbvar);
+		clause->id = i;
+		clause_node = malloc(sizeof(ClauseNode));
+		literal_node = NULL;
+		F->arr_clauses[i] = clause_node;
+		if(F->lst_clauses == NULL)
+			F->lst_clauses = clause_node;
+		while(fscanf(stream, "%d", &var) == 1 && var != 0) {
+			atom = var > 0 ? var : -var;
+			atom--;
+			if(clause->arr_literals[atom] == NULL) {
 				length++;
 				literal = var > 0 ? POSITIVE : NEGATIVE;
 				last_literal_node = literal_node;
@@ -82,37 +82,37 @@ Formula *formula_fread_dimacs(FILE *stream) {
 					F->occurrences[atom]->prev = occurrence;
 				F->occurrences[atom] = occurrence;
 			}
-            fgetc(stream); // read space
-        }
-        clause->length = length;
-        clause->size = length;
-        clause->literals = malloc(length * sizeof(int));
-        literal_node = clause->lst_literals;
-        for(j = 0; j < length; j++) {
+			fgetc(stream); // read space
+		}
+		clause->length = length;
+		clause->size = length;
+		clause->literals = malloc(length * sizeof(int));
+		literal_node = clause->lst_literals;
+		for(j = 0; j < length; j++) {
 			clause->literals[j] = literal_node->atom;
 			literal_node = literal_node->next;
 		}
-        // Unitary clause
-        unitaries = malloc(sizeof(ClauseNode));
-		unitaries->clause = clause;
-		unitaries->next = NULL;
-		unitaries->prev = NULL;
-		F->arr_unitaries[i] = unitaries;
-        if(length == 1) {
-            unitaries->next = F->lst_unitaries;
-            if(F->lst_unitaries != NULL)
-                F->lst_unitaries->prev = unitaries;
-            F->lst_unitaries = unitaries;
-        }
-        clause_node->clause = clause;
-        clause_node->next = NULL;
-        clause_node->prev = last_clause_node;
-        if(last_clause_node != NULL)
-            last_clause_node->next = clause_node;
-        fgetc(stream); // read break line
-    }
-    // Return the formula
-    return F;
+		// Unitary clause
+		unit_clause = malloc(sizeof(ClauseNode));
+		unit_clause->clause = clause;
+		unit_clause->next = NULL;
+		unit_clause->prev = NULL;
+		F->arr_unit_clauses[i] = unit_clause;
+		if(length == 1) {
+			unit_clause->next = F->lst_unit_clauses;
+			if(F->lst_unit_clauses != NULL)
+				F->lst_unit_clauses->prev = unit_clause;
+			F->lst_unit_clauses = unit_clause;
+		}
+		clause_node->clause = clause;
+		clause_node->next = NULL;
+		clause_node->prev = last_clause_node;
+		if(last_clause_node != NULL)
+			last_clause_node->next = clause_node;
+		fgetc(stream); // read break line
+	}
+	// Return the formula
+	return F;
 }
 
 /**
@@ -122,11 +122,11 @@ Formula *formula_fread_dimacs(FILE *stream) {
   * 
   **/
 void formula_printf(Formula *F) {
-    ClauseNode *clause_node = F->lst_clauses;
-    while(clause_node != NULL) {
-        clause_printf(clause_node->clause);
-        clause_node = clause_node->next;
-    }
+	ClauseNode *clause_node = F->lst_clauses;
+	while(clause_node != NULL) {
+		clause_printf(clause_node->clause);
+		clause_node = clause_node->next;
+	}
 }
 
 /**
@@ -136,8 +136,8 @@ void formula_printf(Formula *F) {
   * 
   **/
 void clause_printf(Clause *clause) {
-    LiteralNode *literal_node;
-    printf("( ");
+	LiteralNode *literal_node;
+	printf("( ");
 	literal_node = clause->lst_literals;
 	while(literal_node != NULL) {
 		literal_printf(literal_node->atom, literal_node->literal);
@@ -155,7 +155,7 @@ void clause_printf(Clause *clause) {
   * 
   **/
 void literal_printf(Atom atom, Literal literal) {
-    printf(literal == NEGATIVE ? "-%d " : "%d ", atom+1);
+	printf(literal == NEGATIVE ? "-%d " : "%d ", atom+1);
 }
 
 /**
@@ -166,13 +166,13 @@ void literal_printf(Atom atom, Literal literal) {
   * 
   **/
 void formula_printf_interpretation(Formula *F) {
-    int i;
-    Bool value;
-    for(i = 0; i < F->variables; i++) {
-        value = F->interpretation[i];
-        if(value == TRUE)
-            printf("%d ", i+1);
-        else if(value == FALSE)
-            printf("-%d ", i+1);
-    }
+	int i;
+	Bool value;
+	for(i = 0; i < F->variables; i++) {
+		value = F->interpretation[i];
+		if(value == TRUE)
+			printf("%d ", i+1);
+		else if(value == FALSE)
+			printf("-%d ", i+1);
+	}
 }

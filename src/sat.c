@@ -3,7 +3,7 @@
  * FILENAME: sat.c
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 19.10.2018
+ * UPDATED: 20.10.2018
  * 
  *H*/
 
@@ -22,36 +22,36 @@
   * 
   **/
 int formula_check_sat(Formula *F) {
-    int success = 1, decide = 1;
-    Graph *G;
-    Clause *clause;
-    Trace *trace;
-    // Initialize structures
-    trace = trace_alloc(F->variables);
-    G = graph_alloc(F->variables);
-    // Unit propagation
-    if(cdcl_unit_propagation(F, G, trace) == 0)
+	int success = 1, decide = 1;
+	Graph *G;
+	Clause *clause;
+	Trace *trace;
+	// Initialize structures
+	trace = trace_alloc(F->variables);
+	G = graph_alloc(F->variables);
+	// Unit propagation
+	if(cdcl_unit_propagation(F, G, trace) == 0)
 		return 0;
-    while(F->length > 0 && success) {
-        // Split cases
-        if(decide)
+	while(F->length > 0 && success) {
+		// Split cases
+		if(decide)
 			success = cdcl_decision_state(F, G, trace);
 		decide = 1;
-        // Unit propagation
-        if(success)
+		// Unit propagation
+		if(success)
 			success = cdcl_unit_propagation(F, G, trace);
-        // Backtracking
-        if(!success && G->decision_level > 0) {
+		// Backtracking
+		if(!success && G->decision_level > 0) {
 			clause = cdcl_analyze_conflict(F, G, trace);
-            success = cdcl_backtracking(F, G, trace, clause);
-            decide = 0;
-        }
-    }
-    // Free structures
-    trace_free(trace);
-    graph_free(G);
-    // Return result
-    return F->length == 0;
+			success = cdcl_backtracking(F, G, trace, clause);
+			decide = 0;
+		}
+	}
+	// Free structures
+	trace_free(trace);
+	graph_free(G);
+	// Return result
+	return F->length == 0;
 }
 
 /**
@@ -66,35 +66,35 @@ int formula_check_sat(Formula *F) {
   * 
   **/
 int cdcl_replace_variable(Formula *F, Graph *G, Trace *trace, Atom atom, Bool value) {
-    Literal literal;
-    Clause *clause;
-    ClauseNode *node = F->occurrences[atom];
-    // Assign interpretation
-    F->interpretation[atom] = value;
-    // Iterate clauses containing the literal
-    while(node != NULL) {
-        clause = node->clause;
-        if(!F->sat_clauses[clause->id]) {
-            literal = clause->arr_literals[atom]->literal;
-            // If same sign of literal, remove clause
-            if(literal == NEGATIVE && value == FALSE || literal == POSITIVE && value == TRUE) {
-                formula_retract_clause(F, clause->id);
-                trace_push(trace, clause, atom, NONE);
-            // else, remove the literal from the clause
-            } else {
-                if(clause->length == 1) {
+	Literal literal;
+	Clause *clause;
+	ClauseNode *node = F->occurrences[atom];
+	// Assign interpretation
+	F->interpretation[atom] = value;
+	// Iterate clauses containing the literal
+	while(node != NULL) {
+		clause = node->clause;
+		if(!F->sat_clauses[clause->id]) {
+			literal = clause->arr_literals[atom]->literal;
+			// If same sign of literal, remove clause
+			if(literal == NEGATIVE && value == FALSE || literal == POSITIVE && value == TRUE) {
+				formula_retract_clause(F, clause->id);
+				trace_push(trace, clause, atom, NONE);
+			// else, remove the literal from the clause
+			} else {
+				if(clause->length == 1) {
 					// Add conflictive node
 					graph_set_node(G, atom, value, G->decision_level, CONFLICTIVE, clause);
-                    return 0;
-                }
-                clause_retract_literal(F, clause->id, atom);
+					return 0;
+				}
+				clause_retract_literal(F, clause->id, atom);
 				trace_push(trace, clause, atom, clause->arr_literals[atom]->literal);
-            }
-        }
-        // Update node
-        node = node->next;
-    }
-    return 1;
+			}
+		}
+		// Update node
+		node = node->next;
+	}
+	return 1;
 }
 
 /** 
@@ -105,14 +105,14 @@ int cdcl_replace_variable(Formula *F, Graph *G, Trace *trace, Atom atom, Bool va
   * 
   **/
 int cdcl_decision_state(Formula *F, Graph *G, Trace *trace) {
-    Atom atom;
-    Literal literal;
-    Bool value;
-    ClauseNode *clause_node;
-    LiteralNode *literal_node;
-    // Get uninterpreted literal
-    clause_node = F->lst_clauses;
-    if(clause_node != NULL) {
+	Atom atom;
+	Literal literal;
+	Bool value;
+	ClauseNode *clause_node;
+	LiteralNode *literal_node;
+	// Get uninterpreted literal
+	clause_node = F->lst_clauses;
+	if(clause_node != NULL) {
 		// Update level of the implication graph
 		G->decision_level++;
 		literal_node = clause_node->clause->lst_literals;
@@ -125,8 +125,8 @@ int cdcl_decision_state(Formula *F, Graph *G, Trace *trace) {
 			return cdcl_replace_variable(F, G, trace, atom, value);
 		}
 		return 0;
-    }
-    return 1;
+	}
+	return 1;
 }
 
 /**
@@ -139,19 +139,19 @@ int cdcl_decision_state(Formula *F, Graph *G, Trace *trace) {
   * 
   **/
 int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace) {
-    LiteralNode *literal_node;
-    ClauseNode *clause_node, *next;
-    Clause *clause;
-    Atom atom;
-    Bool value;
-    int change = 1;
-    while(change) {
+	LiteralNode *literal_node;
+	ClauseNode *clause_node, *next;
+	Clause *clause;
+	Atom atom;
+	Bool value;
+	int change = 1;
+	while(change) {
 		change = 0;
 		clause_node = F->lst_clauses;
-		F->lst_unitaries = NULL;
-		// Iterate unitary clauses
+		F->lst_unit_clauses = NULL;
+		// Iterate unit clauses
 		while(clause_node != NULL) {
-			// Update unitary nodes
+			// Update unit clause nodes
 			clause = clause_node->clause;
 			literal_node = clause->lst_literals;
 			atom = literal_node->atom;
@@ -170,7 +170,7 @@ int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace) {
 			clause_node = clause_node->next;
 		}
 	}
-    return 1;
+	return 1;
 }
 
 /**
@@ -182,7 +182,7 @@ int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace) {
   **/
 Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	Clause *clause = malloc(sizeof(Clause));
-	ClauseNode *clause_node, *unitary, *occurrence;
+	ClauseNode *clause_node, *unit_clause, *occurrence;
 	LiteralNode *literal_node = NULL, *first_literal_node = NULL, *last_literal_node = NULL, *prev, *next;
 	LiteralNode **arr_literals = malloc(F->variables * sizeof(LiteralNode*));
 	GraphNode *node;
@@ -266,11 +266,11 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	clause_node->clause = clause;
 	clause_node->next = F->lst_clauses;
 	clause_node->prev = NULL;
-	// Create unitary node
-	unitary = malloc(sizeof(ClauseNode));
-	unitary->clause = clause;
-	unitary->next = NULL;
-	unitary->prev = NULL;
+	// Create unit node
+	unit_clause = malloc(sizeof(ClauseNode));
+	unit_clause->clause = clause;
+	unit_clause->next = NULL;
+	unit_clause->prev = NULL;
 	// Add clause to the formula
 	F->size++;
 	F->length++;
@@ -278,12 +278,12 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	if(F->size > F->alloc_size) {
 		F->alloc_size += F->original_size;
 		F->arr_clauses = realloc(F->arr_clauses, F->alloc_size * sizeof(ClauseNode*));
-		F->arr_unitaries = realloc(F->arr_unitaries, F->alloc_size * sizeof(ClauseNode*));
+		F->arr_unit_clauses = realloc(F->arr_unit_clauses, F->alloc_size * sizeof(ClauseNode*));
 		F->sat_clauses = realloc(F->sat_clauses, F->alloc_size * sizeof(int));
 	}
 	F->sat_clauses[F->size-1] = 0;
 	F->arr_clauses[F->size-1] = clause_node;
-	F->arr_unitaries[F->size-1] = unitary;
+	F->arr_unit_clauses[F->size-1] = unit_clause;
 	if(F->lst_clauses != NULL)
 		F->lst_clauses->prev = clause_node;
 	F->lst_clauses = clause_node;
@@ -315,38 +315,38 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
   * 
   **/
 int cdcl_backtracking(Formula *F, Graph *G, Trace *trace, Clause *clause) {
-    TraceNode *node = trace->lst_traces, *prev;
-    Atom atom;
-    Bool value;
-    // Free conflictive node
-    free(G->nodes[G->size]);
-    G->nodes[G->size] = NULL;
-    // Pop trace nodes
-    while(node != NULL && (clause->length != 1 || clause->arr_literals[node->atom] == NULL || clause->lst_literals->atom == node->atom) ) {
-        if(node->clause != NULL) {
-            // Assert clause
-            if(node->literal == NONE)
+	TraceNode *node = trace->lst_traces, *prev;
+	Atom atom;
+	Bool value;
+	// Free conflictive node
+	free(G->nodes[G->size]);
+	G->nodes[G->size] = NULL;
+	// Pop trace nodes
+	while(node != NULL && (clause->length != 1 || clause->arr_literals[node->atom] == NULL || clause->lst_literals->atom == node->atom) ) {
+		if(node->clause != NULL) {
+			// Assert clause
+			if(node->literal == NONE)
 				formula_assert_clause(F, node->clause->id);
-            // Assert literal
-            else
+			// Assert literal
+			else
 				clause_assert_literal(F, node->clause->id, node->atom, node->literal);
-        // Restore variable
-        } else {
+		// Restore variable
+		} else {
 			if(G->nodes[node->atom]->decision == ARBITRARY)
 				G->decision_level--;
 			free(G->nodes[node->atom]);
 			G->nodes[node->atom] = NULL;
-            F->interpretation[node->atom] = UNKNOWN;
-            trace->decisions[node->atom] = NULL;
-        }
-        // Update trace node
-        prev = node->prev;
-        free(node);
-        node = prev;
-        trace->length--;
-    }
-    trace->lst_traces = node;
-    if(node != NULL)
+			F->interpretation[node->atom] = UNKNOWN;
+			trace->decisions[node->atom] = NULL;
+		}
+		// Update trace node
+		prev = node->prev;
+		free(node);
+		node = prev;
+		trace->length--;
+	}
+	trace->lst_traces = node;
+	if(node != NULL)
 		node->next = NULL;
 	return clause->length == 1;
 }
