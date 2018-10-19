@@ -64,14 +64,21 @@ Clause *clause_alloc(int nbvar) {
 	return clause;
 }
 
-/** Initializa a new action */
-void init_action(Action *actions, int size) {
+/**
+  * 
+  * This function creates a trace of $nbvar variables, returning a
+  * pointer to a newly initialized Trace struct.
+  * 
+  **/
+Trace *trace_alloc(int nbvar) {
 	int i;
-	actions->first = NULL;
-	actions->decisions = malloc(size*sizeof(ActionNode*));
-	actions->length = 0;
-	for(i = 0; i < size; i++)
-		actions->decisions[i] = NULL;
+	Trace *trace = malloc(sizeof(Trace));
+	trace->lst_traces = NULL;
+	trace->decisions = malloc(nbvar * sizeof(TraceNode*));
+	trace->length = 0;
+	for(i = 0; i < nbvar; i++)
+		trace->decisions[i] = NULL;
+	return trace;
 }
 
 /** Initialize a new implication graph */

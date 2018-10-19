@@ -30,7 +30,7 @@ typedef enum {UNKNOWN = -1, FALSE = 0, TRUE = 1} Bool;
 /** Possible kinds of nodes in implication graphs */
 typedef enum {ARBITRARY, FORCED, CONFLICTIVE} Decision;
 
-/** Data structure for literals linked-lists */
+/** Data structure for literals */
 typedef struct LiteralNode {
 	Atom atom;                    // Atom
     Literal literal;              // Literal
@@ -48,7 +48,6 @@ typedef struct Clause {
     int size;                     // Total number of literals
 } Clause;
 
-/** Data structure for clauses linked-lists */
 typedef struct ClauseNode {
 	Clause *clause;               // Clause
     struct ClauseNode *next;      // Next literal
@@ -71,23 +70,22 @@ typedef struct Formula {
     Bool *interpretation;         // Array of values for interpretation
 } Formula;
 
-/** Data structures for node actions */
-typedef struct ActionNode {
+/** Data structures for trace execution */
+typedef struct TraceNode {
 	Clause *clause;               // Clause removed
 	Atom atom;                    // Atom
 	Literal literal;              // Literal
-	struct ActionNode *next;      // Next node
-	struct ActionNode *prev;      // Previous node
-} ActionNode;
+	struct TraceNode *next;       // Next node
+	struct TraceNode *prev;       // Previous node
+} TraceNode;
 
-/** Data structures for record actions */
-typedef struct Action {
-	ActionNode *first;            // First node
-	ActionNode **decisions;       // Array of pointer to decision nodes
+typedef struct Trace {
+	TraceNode *lst_traces;        // First node
+	TraceNode **decisions;        // Array of pointer to decision nodes
 	int length;                   // Number of nodes
-} Action;
+} Trace;
 
-/** Data structure for nodes of implication graphs */
+/** Data structures for implication graphs */
 typedef struct GraphNode {
 	Atom atom;                    // Atom of the node
 	Bool value;                   // Value for the atom
@@ -97,7 +95,6 @@ typedef struct GraphNode {
 	int degree;                   // Number of antecedents
 } GraphNode;
 
-/** Data structure for implication graphs */
 typedef struct Graph {
 	GraphNode **nodes;            // Nodes of the graph
 	int size;                     // Maximum number of nodes
@@ -124,8 +121,13 @@ Formula *formula_alloc(int nbvar, int nbclauses);
   * 
   **/
 Clause *clause_alloc(int nbvar);
-/** Initializa a new action */
-void init_action(Action *actions, int size);
+/**
+  * 
+  * This function creates a trace of $nbvar variables, returning a
+  * pointer to a newly initialized Trace struct.
+  * 
+  **/
+Trace *trace_alloc(int nbvar);
 /** Initialize a new implication graph */
 void init_graph(Graph *G, int size);
 /** Add a new node into a graph */
