@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Data structures for SAT problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 17.10.2018
+ * UPDATED: 19.10.2018
  * 
  *H*/
 
@@ -61,6 +61,8 @@ typedef struct Formula {
     ClauseNode *lst_clauses;      // Linked-list of clauses
     int length;                   // Number of clauses in the list
     int size;                     // Total number of clauses
+    int original_size;            // Original size
+    int alloc_size;               // Number of clauses allocated
     int variables;                // Number of unique variables
     int *sat_clauses;             // Satisfiable clauses
     ClauseNode **arr_unitaries;   // Array of one-literal clauses

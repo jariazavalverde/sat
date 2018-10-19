@@ -3,7 +3,7 @@
  * FILENAME: sat.c
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 18.10.2018
+ * UPDATED: 19.10.2018
  * 
  *H*/
 
@@ -229,9 +229,13 @@ Clause *analyze_conflict(Formula *F, Graph *G, Interpretation *I, Action *action
 	// Add clause to the formula
 	F->size++;
 	F->length++;
-	F->arr_clauses = realloc(F->arr_clauses, F->size * sizeof(ClauseNode*));
-	F->arr_unitaries = realloc(F->arr_unitaries, F->size * sizeof(ClauseNode*));
-	F->sat_clauses = realloc(F->sat_clauses, F->size * sizeof(int));
+	// Realloc formula
+	if(F->size > F->alloc_size) {
+		F->alloc_size += F->original_size;
+		F->arr_clauses = realloc(F->arr_clauses, F->alloc_size * sizeof(ClauseNode*));
+		F->arr_unitaries = realloc(F->arr_unitaries, F->alloc_size * sizeof(ClauseNode*));
+		F->sat_clauses = realloc(F->sat_clauses, F->alloc_size * sizeof(int));
+	}
 	F->sat_clauses[F->size-1] = 0;
 	F->arr_clauses[F->size-1] = clause_node;
 	F->arr_unitaries[F->size-1] = unitary;
