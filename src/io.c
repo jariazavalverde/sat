@@ -54,29 +54,31 @@ Formula *formula_read_dimacs(char *path) {
         if(F->lst_clauses == NULL)
             F->lst_clauses = clause_node;
         while(fscanf(file, "%d", &var) == 1 && var != 0) {
-            length++;
             atom = var > 0 ? var : -var;
             atom--;
-            literal = var > 0 ? POSITIVE : NEGATIVE;
-            last_literal_node = literal_node;
-            literal_node = malloc(sizeof(LiteralNode));
-            clause->arr_literals[atom] = literal_node;
-            literal_node->atom = atom; 
-            literal_node->literal = literal;
-            literal_node->next = NULL;
-            literal_node->prev = last_literal_node;
-            if(clause->lst_literals == NULL)
-                clause->lst_literals = literal_node;
-            if(last_literal_node != NULL)
-                last_literal_node->next = literal_node;
-            // Occurrence
-            occurrence = malloc(sizeof(ClauseNode));
-            occurrence->clause = clause;
-            occurrence->next = F->occurrences[atom];
-            occurrence->prev = NULL;
-            if(F->occurrences[atom] != NULL)
-                F->occurrences[atom]->prev = occurrence;
-            F->occurrences[atom] = occurrence;
+            if(clause->arr_literals[atom] == NULL) {
+				length++;
+				literal = var > 0 ? POSITIVE : NEGATIVE;
+				last_literal_node = literal_node;
+				literal_node = malloc(sizeof(LiteralNode));
+				clause->arr_literals[atom] = literal_node;
+				literal_node->atom = atom; 
+				literal_node->literal = literal;
+				literal_node->next = NULL;
+				literal_node->prev = last_literal_node;
+				if(clause->lst_literals == NULL)
+					clause->lst_literals = literal_node;
+				if(last_literal_node != NULL)
+					last_literal_node->next = literal_node;
+				// Occurrence
+				occurrence = malloc(sizeof(ClauseNode));
+				occurrence->clause = clause;
+				occurrence->next = F->occurrences[atom];
+				occurrence->prev = NULL;
+				if(F->occurrences[atom] != NULL)
+					F->occurrences[atom]->prev = occurrence;
+				F->occurrences[atom] = occurrence;
+			}
             fgetc(file); // read space
         }
         clause->length = length;
