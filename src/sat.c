@@ -203,6 +203,7 @@ Clause *analyze_conflict(Formula *F, Graph *G, Interpretation *I, Action *action
 						next->prev = prev;
 					if(first_literal_node == arr_literals[atom])
 						first_literal_node = prev;
+					free(arr_literals[atom]);
 					arr_literals[atom] = NULL;
 				}
 			}
@@ -408,6 +409,7 @@ int backtracking(Formula *F, Graph *G, Interpretation *I, Clause *clause, Action
     Atom atom;
     Bool value;
     // Remove conflictive node
+    free(G->nodes[G->size]);
     G->nodes[G->size] = NULL;
     // Pull actions
     while(action != NULL && (clause->length != 1 || clause->arr_literals[action->atom] == NULL || clause->lst_literals->atom == action->atom) ) {
@@ -420,6 +422,7 @@ int backtracking(Formula *F, Graph *G, Interpretation *I, Clause *clause, Action
         } else {
 			if(G->nodes[action->atom]->decision == ARBITRARY)
 				G->max_level--;
+			free(G->nodes[action->atom]);
 			G->nodes[action->atom] = NULL;
             I->bindings[action->atom] = UNKNOWN;
             actions->decisions[action->atom] = NULL;

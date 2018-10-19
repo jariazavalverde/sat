@@ -124,5 +124,3 @@ void init_action(Action *actions, int size);
 void init_graph(Graph *G, int size);
 /** Add a new node into a graph */
 int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision, Clause *clause);
-/** Set the value of a graph node */
-int set_graph_node(Graph *G, Atom atom, Bool value);

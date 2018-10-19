@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Operations with structures for SAT problem
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 17.10.2018
+ * UPDATED: 19.10.2018
  * 
  *H*/
 
@@ -53,13 +53,5 @@ int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision
 	node->degree = degree;
 	node->level = level;
 	node->antecedents = clause;
-	return 1;
-}
-
-/** Set the value of a graph node */
-int set_graph_node(Graph *G, Atom atom, Bool value) {
-	if(G->nodes[atom] != NULL)
-		return 0;
-	G->nodes[atom]->value = value;
 	return 1;
 }
