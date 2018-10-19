@@ -159,12 +159,12 @@ void clause_free(Clause *clause) {
   **/
 void trace_free(Trace *trace) {
 	int i;
-	TraceNode *trace_node = trace->lst_traces, *next;
+	TraceNode *trace_node = trace->lst_traces, *prev;
 	// Free literal nodes
 	while(trace_node != NULL) {
-		next = trace_node->next;
+		prev = trace_node->prev;
 		free(trace_node);
-		trace_node = next;
+		trace_node = prev;
 	}
 	// Free arrays
 	free(trace->decisions);

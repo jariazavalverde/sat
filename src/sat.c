@@ -387,22 +387,23 @@ void push_action(Trace *trace, Clause *clause, Atom atom, Literal literal) {
 void push_action_after(Trace *trace, Clause *clause, Atom atom, Literal literal) {
     TraceNode *node, *assign, *next = NULL;
     assign = trace->decisions[atom];
-    if(assign != NULL)
+    if(assign != NULL) {
 		next = assign->next;
-    node = malloc(sizeof(TraceNode));
-    node->clause = clause;
-    node->atom = atom;
-    node->literal = literal;
-    trace->length++;
-    node->next = next;
-    node->prev = assign;
-	assign->next = node;
-	if(next != NULL)
-		next->prev = node;
-	else
-		trace->lst_traces = node;
-    if(clause == NULL)
-		trace->decisions[atom] = node;
+		node = malloc(sizeof(TraceNode));
+		node->clause = clause;
+		node->atom = atom;
+		node->literal = literal;
+		trace->length++;
+		node->next = next;
+		node->prev = assign;
+		assign->next = node;
+		if(next != NULL)
+			next->prev = node;
+		else
+			trace->lst_traces = node;
+		if(clause == NULL)
+			trace->decisions[atom] = node;
+	}
 }
 
 /** Perform a backtracking */
