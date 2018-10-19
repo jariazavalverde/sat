@@ -3,7 +3,7 @@
  * FILENAME: io.h
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 17.10.2018
+ * UPDATED: 19.10.2018
  * 
  *H*/
 
