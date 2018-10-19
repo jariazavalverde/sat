@@ -305,7 +305,7 @@ void clause_retract_literal(Formula *F, int clause_id, Atom atom) {
   * This function asserts the literal $atom into the clause with id
   * $clause_id of the formula $F. If the clause becomes unit, it is also
   * asserted into the unit clauses array of $F. If the clause was unit
-  * becomes but becomes not unit, it is retracted from the unit clauses
+  * but it becomes not unit, it is retracted from the unit clauses
   * array of $F.
   * 
   **/

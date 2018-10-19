@@ -11,8 +11,17 @@
 
 
 
-/** Check satisfiability of a formula */
-int check_sat(Formula *F) {
+/**
+  * 
+  * This function checks the satisfiability of the formula $F,
+  * following the Conflict-driven clause learning algorithm. If $F
+  * is satisfiable, the functions returns 1 and an interpretation for
+  * $F is set in $F->interpretation. Otherwise, the function returns 0.
+  * The original formula $F can be modified by assertion or retraction
+  * of clauses and literals, or by addition of new clauses.
+  * 
+  **/
+int formula_check_sat(Formula *F) {
     int success = 1, decide = 1;
     Graph *G;
     Clause *clause;
@@ -21,20 +30,20 @@ int check_sat(Formula *F) {
     trace = trace_alloc(F->variables);
     G = graph_alloc(F->variables);
     // Unit propagation
-    if(unit_propagation(F, G, trace) == 0)
+    if(cdcl_unit_propagation(F, G, trace) == 0)
 		return 0;
     while(F->length > 0 && success) {
         // Split cases
         if(decide)
-			success = split_cases(F, G, trace);
+			success = cdcl_decision_state(F, G, trace);
 		decide = 1;
         // Unit propagation
         if(success)
-			success = unit_propagation(F, G, trace);
+			success = cdcl_unit_propagation(F, G, trace);
         // Backtracking
         if(!success && G->decision_level > 0) {
-			clause = analyze_conflict(F, G, trace);
-            success = backtracking(F, G, trace, clause);
+			clause = cdcl_analyze_conflict(F, G, trace);
+            success = cdcl_backtracking(F, G, trace, clause);
             decide = 0;
         }
     }
@@ -45,8 +54,18 @@ int check_sat(Formula *F) {
     return F->length == 0;
 }
 
-/** Propagate a value of a variable */
-int replace_variable(Formula *F, Graph *G, Trace *trace, Atom atom, Bool value) {
+/**
+  * 
+  * This function propagates the value $value of the variable $atom in
+  * the formula $F. If the literal $atom in a clause is POSITIVE and
+  * $value is TRUE, or the literal $atom is NEGATIVE and $value is FALSE,
+  * the clause is satisfied and retracted from $F. Otherwise, the literal
+  * is retracted from the clause. If the length of a clause becomes zero
+  * (empty clause), $F is unsatisfiable and the function fails and
+  * returns 0. Otherwise, the function succeeds and returns 1.
+  * 
+  **/
+int cdcl_replace_variable(Formula *F, Graph *G, Trace *trace, Atom atom, Bool value) {
     Literal literal;
     Clause *clause;
     ClauseNode *node = F->occurrences[atom];
@@ -78,8 +97,48 @@ int replace_variable(Formula *F, Graph *G, Trace *trace, Atom atom, Bool value) 
     return 1;
 }
 
-/** Unit propagation */
-int unit_propagation(Formula *F, Graph *G, Trace *trace) {
+/** 
+  * 
+  * This function selects a variable from the formula $F and assigns it a
+  * value (TRUE or FALSE). The value is propagated in $F and the function
+  * returns the result of the propagation.
+  * 
+  **/
+int cdcl_decision_state(Formula *F, Graph *G, Trace *trace) {
+    Atom atom;
+    Literal literal;
+    Bool value;
+    ClauseNode *clause_node;
+    LiteralNode *literal_node;
+    // Get uninterpreted literal
+    clause_node = F->lst_clauses;
+    if(clause_node != NULL) {
+		// Update level of the implication graph
+		G->decision_level++;
+		literal_node = clause_node->clause->lst_literals;
+		if(literal_node != NULL) {
+			atom = literal_node->atom;
+			literal = literal_node->literal;
+			value = literal == NEGATIVE ? FALSE : TRUE;
+			trace_push(trace, NULL, atom, NONE);
+			graph_set_node(G, atom, value, G->decision_level, ARBITRARY, NULL);
+			return cdcl_replace_variable(F, G, trace, atom, value);
+		}
+		return 0;
+    }
+    return 1;
+}
+
+/**
+  * If an unsatisfied clause has all but one of its variables evaluated
+  * at false (unit clause), then the free variable must be true in order
+  * for the clause to be true. This function iterates the unit clauses
+  * of the formula $F and tries to satisfy all of them. If any unit 
+  * clause can not be satisfied, the function fails and returns 0.
+  * Otherwise, the functon succeeds and returns 1.
+  * 
+  **/
+int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace) {
     LiteralNode *literal_node;
     ClauseNode *clause_node, *next;
     Clause *clause;
@@ -105,7 +164,7 @@ int unit_propagation(Formula *F, Graph *G, Trace *trace) {
 				// Add graph node
 				graph_set_node(G, atom, value, G->decision_level, FORCED, clause);
 				// Replace variable
-				if(replace_variable(F, G, trace, atom, value) == 0)
+				if(cdcl_replace_variable(F, G, trace, atom, value) == 0)
 					return 0;
 			}
 			clause_node = clause_node->next;
@@ -114,34 +173,14 @@ int unit_propagation(Formula *F, Graph *G, Trace *trace) {
     return 1;
 }
 
-/** Split cases */
-int split_cases(Formula *F, Graph *G, Trace *trace) {
-    Atom atom;
-    Literal literal;
-    Bool value;
-    ClauseNode *clause_node;
-    LiteralNode *literal_node;
-    // Get uninterpreted literal
-    clause_node = F->lst_clauses;
-    if(clause_node != NULL) {
-		// Update level of the implication graph
-		G->decision_level++;
-		literal_node = clause_node->clause->lst_literals;
-		if(literal_node != NULL) {
-			atom = literal_node->atom;
-			literal = literal_node->literal;
-			value = literal == NEGATIVE ? FALSE : TRUE;
-			trace_push(trace, NULL, atom, NONE);
-			graph_set_node(G, atom, value, G->decision_level, ARBITRARY, NULL);
-			return replace_variable(F, G, trace, atom, value);
-		}
-		return 0;
-    }
-    return 1;
-}
-
-/** Analyze the conflict in the implication graph */
-Clause *analyze_conflict(Formula *F, Graph *G, Trace *trace) {
+/**
+  * 
+  * This function analyzes the conflict produced in the formula $F
+  * with the implication graph $G, and generates a new clause. The 
+  * learnt clause is asserted in $F and returned by the function.
+  * 
+  **/
+Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	Clause *clause = malloc(sizeof(Clause));
 	ClauseNode *clause_node, *unitary, *occurrence;
 	LiteralNode *literal_node = NULL, *first_literal_node = NULL, *last_literal_node = NULL, *prev, *next;
@@ -265,8 +304,17 @@ Clause *analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	return clause;
 }
 
-/** Perform a backtracking */
-int backtracking(Formula *F, Graph *G, Trace *trace, Clause *clause) {
+/**
+  * 
+  * This function performs a backtracking in the formula $F until the
+  * clause $clause becomes unit. This function also  frees the undone
+  * trace nodes from the trace $trace, and the undone graph nodes from 
+  * the implication graph $G. If the clause $clause is unit after the
+  * backtracking, the function succeeds and return 1. Otherwise the
+  * function fails and return 0.
+  * 
+  **/
+int cdcl_backtracking(Formula *F, Graph *G, Trace *trace, Clause *clause) {
     TraceNode *node = trace->lst_traces, *prev;
     Atom atom;
     Bool value;
@@ -300,5 +348,5 @@ int backtracking(Formula *F, Graph *G, Trace *trace, Clause *clause) {
     trace->lst_traces = node;
     if(node != NULL)
 		node->next = NULL;
-	return 1;
+	return clause->length == 1;
 }

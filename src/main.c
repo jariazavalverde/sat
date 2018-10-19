@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 			}
 			begin = clock();
 			// Check satisfiability
-			sat = check_sat(F);
+			sat = formula_check_sat(F);
 			end = clock();
 			// Show execution time
 			if(op_time) {
