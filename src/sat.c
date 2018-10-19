@@ -32,7 +32,7 @@ int check_sat(Formula *F) {
         if(success)
 			success = unit_propagation(F, G, trace);
         // Backtracking
-        if(!success && G->max_level > 0) {
+        if(!success && G->decision_level > 0) {
 			clause = analyze_conflict(F, G, trace);
             success = backtracking(F, G, trace, clause);
             decide = 0;
@@ -59,15 +59,17 @@ int replace_variable(Formula *F, Graph *G, Trace *trace, Atom atom, Bool value) 
             literal = clause->arr_literals[atom]->literal;
             // If same sign of literal, remove clause
             if(literal == NEGATIVE && value == FALSE || literal == POSITIVE && value == TRUE) {
-                remove_clause(F, trace, clause, atom);
+                formula_retract_clause(F, clause->id);
+                trace_push(trace, clause, atom, NONE);
             // else, remove the literal from the clause
             } else {
                 if(clause->length == 1) {
 					// Add conflictive node
-					add_graph_node(G, atom, value, G->max_level, CONFLICTIVE, clause);
+					graph_set_node(G, atom, value, G->decision_level, CONFLICTIVE, clause);
                     return 0;
                 }
-                remove_literal(F, trace, clause, atom);
+                clause_retract_literal(F, clause->id, atom);
+				trace_push(trace, clause, atom, clause->arr_literals[atom]->literal);
             }
         }
         // Update node
@@ -99,9 +101,9 @@ int unit_propagation(Formula *F, Graph *G, Trace *trace) {
 				change = 1;
 				value = literal_node->literal == NEGATIVE ? FALSE : TRUE;
 				// Push action
-				push_action(trace, NULL, atom, NONE);
+				trace_push(trace, NULL, atom, NONE);
 				// Add graph node
-				add_graph_node(G, atom, value, G->max_level, FORCED, clause);
+				graph_set_node(G, atom, value, G->decision_level, FORCED, clause);
 				// Replace variable
 				if(replace_variable(F, G, trace, atom, value) == 0)
 					return 0;
@@ -123,14 +125,14 @@ int split_cases(Formula *F, Graph *G, Trace *trace) {
     clause_node = F->lst_clauses;
     if(clause_node != NULL) {
 		// Update level of the implication graph
-		G->max_level++;
+		G->decision_level++;
 		literal_node = clause_node->clause->lst_literals;
 		if(literal_node != NULL) {
 			atom = literal_node->atom;
 			literal = literal_node->literal;
 			value = literal == NEGATIVE ? FALSE : TRUE;
-			push_action(trace, NULL, atom, NONE);
-			add_graph_node(G, atom, value, G->max_level, ARBITRARY, NULL);
+			trace_push(trace, NULL, atom, NONE);
+			graph_set_node(G, atom, value, G->decision_level, ARBITRARY, NULL);
 			return replace_variable(F, G, trace, atom, value);
 		}
 		return 0;
@@ -257,153 +259,10 @@ Clause *analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 		if(F->occurrences[literal_node->atom] != NULL)
 			F->occurrences[literal_node->atom]->prev = occurrence;
 		F->occurrences[literal_node->atom] = occurrence;
-		push_action_after(trace, clause, literal_node->atom, literal_node->literal);
+		trace_append(trace, clause, literal_node->atom, literal_node->literal);
 		literal_node = literal_node->next;
 	}
 	return clause;
-}
-
-/** Remove a clause from a formula */
-void remove_clause(Formula *F, Trace *trace, Clause *clause, Atom atom) {
-    int clause_id = clause->id;
-    ClauseNode *prev, *next;
-    // Set clause as satisfiable
-    F->sat_clauses[clause_id] = 1;
-    F->length--;
-    // Remove node
-    prev = F->arr_clauses[clause_id]->prev;
-    next = F->arr_clauses[clause_id]->next;
-    if(prev == NULL)
-        F->lst_clauses = next;
-    else
-        prev->next = next;
-    if(next != NULL)
-        next->prev = prev;
-    // Remove unitary clause
-    if(clause->length == 1)
-		remove_unitary_clause(F, clause_id);
-    // Add action
-    push_action(trace, clause, atom, NONE);
-}
-
-/** Remove a literal from a clause */
-void remove_literal(Formula *F, Trace *trace, Clause *clause, Atom atom) {
-    LiteralNode *next, *prev, *literal;
-    // Remove node
-    clause->length--;
-    literal = clause->arr_literals[atom];
-    prev = literal->prev;
-    next = literal->next;
-    if(prev == NULL)
-        clause->lst_literals = next;
-    else
-        prev->next = next;
-    if(next != NULL)
-        next->prev = prev;
-    // Add unitary clause
-    if(clause->length == 1)
-		add_unitary_clause(F, clause->id);
-    // Add action
-    push_action(trace, clause, atom, literal->literal);
-}
-
-/** Remove unitary clause */
-void remove_unitary_clause(Formula *F, int clause_id) {
-	ClauseNode *unitary = F->arr_unitaries[clause_id];
-	if(F->lst_unitaries != NULL && F->lst_unitaries->clause->id == unitary->clause->id)
-		F->lst_unitaries = unitary->next;
-	else
-		if(unitary->prev != NULL)
-			unitary->prev->next = unitary->next;
-		if(unitary->next != NULL)
-			unitary->next->prev = unitary->prev;
-	unitary->next = NULL;
-	unitary->prev = NULL;
-}
-
-/** Add a clause to a formula */
-void add_clause(Formula *F, Clause *clause) {
-    int clause_id = clause->id;
-    ClauseNode *node = F->arr_clauses[clause_id];
-    // Unset clause as satisfiable
-    F->sat_clauses[clause_id] = 0;
-    F->length++;
-    // Add node
-    node->prev = NULL;
-    node->next = F->lst_clauses;
-    if(F->lst_clauses != NULL)
-        F->lst_clauses->prev = node;
-    F->lst_clauses = node;
-    // Add unitary clause
-    if(clause->length == 1)
-		add_unitary_clause(F, clause->id);
-}
-
-/** Add a literal to a clause */
-void add_literal(Formula *F, Clause *clause, Atom atom, Literal literal) {
-    LiteralNode *node = clause->arr_literals[atom];
-    // Add node
-    clause->length++;
-    node->prev = NULL;
-    node->next = clause->lst_literals;
-    if(clause->lst_literals != NULL)
-        clause->lst_literals->prev = node;
-    clause->lst_literals = node;
-    // Add unitary clause
-    if(clause->length == 1)
-		add_unitary_clause(F, clause->id);
-    // Remove unitary clause
-    else if(clause->length > 1)
-		remove_unitary_clause(F, clause->id);
-}
-
-/** Add unitary clause */
-void add_unitary_clause(Formula *F, int clause_id) {
-	ClauseNode *unitary = F->arr_unitaries[clause_id];
-	if(F->lst_unitaries != NULL)
-		F->lst_unitaries->prev = unitary;
-	unitary->next = F->lst_unitaries;
-	unitary->prev = NULL;
-	F->lst_unitaries = unitary;
-}
-
-/** Prepend a new action */
-void push_action(Trace *trace, Clause *clause, Atom atom, Literal literal) {
-    TraceNode *node = malloc(sizeof(TraceNode));
-    node->clause = clause;
-    node->atom = atom;
-    node->literal = literal;
-    node->prev = trace->lst_traces;
-    node->next = NULL;
-    if(trace->lst_traces != NULL)
-		trace->lst_traces->next = node;
-    trace->lst_traces = node;
-    trace->length++;
-    if(clause == NULL)
-		trace->decisions[atom] = node;
-}
-
-/** Prepend a new action after assignment */
-void push_action_after(Trace *trace, Clause *clause, Atom atom, Literal literal) {
-    TraceNode *node, *assign, *next = NULL;
-    assign = trace->decisions[atom];
-    if(assign != NULL) {
-		next = assign->next;
-		node = malloc(sizeof(TraceNode));
-		node->clause = clause;
-		node->atom = atom;
-		node->literal = literal;
-		trace->length++;
-		node->next = next;
-		node->prev = assign;
-		assign->next = node;
-		if(next != NULL)
-			next->prev = node;
-		else
-			trace->lst_traces = node;
-		if(clause == NULL)
-			trace->decisions[atom] = node;
-	}
 }
 
 /** Perform a backtracking */
@@ -411,28 +270,28 @@ int backtracking(Formula *F, Graph *G, Trace *trace, Clause *clause) {
     TraceNode *node = trace->lst_traces, *prev;
     Atom atom;
     Bool value;
-    // Remove conflictive node
+    // Free conflictive node
     free(G->nodes[G->size]);
     G->nodes[G->size] = NULL;
-    // Pull actions
+    // Pop trace nodes
     while(node != NULL && (clause->length != 1 || clause->arr_literals[node->atom] == NULL || clause->lst_literals->atom == node->atom) ) {
         if(node->clause != NULL) {
-            // Restore clause
+            // Assert clause
             if(node->literal == NONE)
-				add_clause(F, node->clause);
-            // Restore literal
+				formula_assert_clause(F, node->clause->id);
+            // Assert literal
             else
-				add_literal(F, node->clause, node->atom, node->literal);
+				clause_assert_literal(F, node->clause->id, node->atom, node->literal);
         // Restore variable
         } else {
 			if(G->nodes[node->atom]->decision == ARBITRARY)
-				G->max_level--;
+				G->decision_level--;
 			free(G->nodes[node->atom]);
 			G->nodes[node->atom] = NULL;
             F->interpretation[node->atom] = UNKNOWN;
             trace->decisions[node->atom] = NULL;
         }
-        // Update node
+        // Update trace node
         prev = node->prev;
         free(node);
         node = prev;
