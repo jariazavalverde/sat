@@ -58,6 +58,8 @@ int main(int argc, char **argv) {
 			formula_write_interpretation(F);
 			printf("\n");
 		}
+		// Free formula
+		formula_free(F);
 	} else printf("Error: file must be in DIMACS format.\n");
 	return 0;
 }

@@ -130,5 +130,19 @@ Clause *clause_alloc(int nbvar);
 Trace *trace_alloc(int nbvar);
 /** Initialize a new implication graph */
 void init_graph(Graph *G, int size);
+/**
+  * 
+  * This function frees a previously allocated formula $F.
+  * The clause nodes underlying the formula will also be deallocated.
+  * 
+  **/
+void *formula_free(Formula *F);
+/**
+  * 
+  * This function frees a previously allocated clause $clause.
+  * The literal nodes underlying the clause will also be deallocated.
+  * 
+  **/
+void *clause_free(Clause *clause);
 /** Add a new node into a graph */
 int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision, Clause *clause);

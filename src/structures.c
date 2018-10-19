@@ -90,6 +90,58 @@ void init_graph(Graph *G, int size) {
 		G->nodes[size] = NULL;
 }
 
+/**
+  * 
+  * This function frees a previously allocated formula $F.
+  * The clause nodes underlying the formula will also be deallocated.
+  * 
+  **/
+void *formula_free(Formula *F) {
+	int i;
+	// Free clause nodes
+	ClauseNode *clause_node, *next;
+    for(i = 0; i < F->size; i++) {
+		clause_free(F->arr_clauses[i]->clause);
+		free(F->arr_clauses[i]);
+		free(F->arr_unitaries[i]);
+	}
+	// Free clause nodes from occurrences
+	for(i = 0; i < F->variables; i++) {
+		clause_node = F->occurrences[i];
+		while(clause_node != NULL) {
+			next = clause_node->next;
+			free(clause_node);
+			clause_node = next;
+		}
+	}
+	// Free arrays
+    free(F->arr_clauses);
+	free(F->arr_unitaries);
+	free(F->sat_clauses);
+	free(F->occurrences);
+	free(F->interpretation);
+	// Free formula
+	free(F);
+}
+
+/**
+  * 
+  * This function frees a previously allocated clause $clause.
+  * The literal nodes underlying the clause will also be deallocated.
+  * 
+  **/
+void *clause_free(Clause *clause) {
+	int i;
+	// Free literal nodes
+	for(i = 0; i < clause->size; i++)
+		free(clause->arr_literals[clause->literals[i]]);
+	// Free arrays
+	free(clause->literals);
+	free(clause->arr_literals);
+	// Free clause
+	free(clause);
+}
+
 /** Add a new node into a graph */
 int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision, Clause *clause) {
 	int index = decision == CONFLICTIVE ? G->size : atom;
