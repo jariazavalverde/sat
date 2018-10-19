@@ -11,10 +11,15 @@
 
 
 
-/** Read a formula in DIMACS format */
-Formula *formula_read_dimacs(char *path) {
+/**
+  * 
+  * This function reads and allocates a formula in DIMACS format from
+  * the from the open stream $stream. If the program is not in DIMACS
+  * format, it returns a NULL pointer.
+  * 
+  **/
+Formula *formula_fread_dimacs(FILE *stream) {
 	Formula *F;
-    FILE *file;
     int i, j, length, var, nbvar, nbclauses;
     char ch;
     Atom atom;
@@ -22,22 +27,20 @@ Formula *formula_read_dimacs(char *path) {
     Literal literal;
     LiteralNode *literal_node, *last_literal_node;
     ClauseNode *clause_node = NULL, *last_clause_node, *unitaries, *occurrence;
-    // Open file
-    file = fopen(path, "r");
-    // If file not exists, error
-    if(!file)
-        return NULL;
+    // Check stream
+    if(stream == NULL)
+		return NULL;
     // Drop comments
-    ch = fgetc(file);
+    ch = fgetc(stream);
     while(ch == 'c') {
         while(ch != '\n' && ch != EOF)
-            ch = fgetc(file);
-        ch = fgetc(file);
+            ch = fgetc(stream);
+        ch = fgetc(stream);
     }
     while(ch == '\n')
-        ch = fgetc(file);
+        ch = fgetc(stream);
     // Read header
-    if(ch != 'p' || fscanf(file, " cnf %d %d\n", &nbvar, &nbclauses) != 2)
+    if(ch != 'p' || fscanf(stream, " cnf %d %d\n", &nbvar, &nbclauses) != 2)
         return NULL;
     // Create formula
     F = formula_alloc(nbvar, nbclauses);
@@ -53,7 +56,7 @@ Formula *formula_read_dimacs(char *path) {
         F->arr_clauses[i] = clause_node;
         if(F->lst_clauses == NULL)
             F->lst_clauses = clause_node;
-        while(fscanf(file, "%d", &var) == 1 && var != 0) {
+        while(fscanf(stream, "%d", &var) == 1 && var != 0) {
             atom = var > 0 ? var : -var;
             atom--;
             if(clause->arr_literals[atom] == NULL) {
@@ -79,7 +82,7 @@ Formula *formula_read_dimacs(char *path) {
 					F->occurrences[atom]->prev = occurrence;
 				F->occurrences[atom] = occurrence;
 			}
-            fgetc(file); // read space
+            fgetc(stream); // read space
         }
         clause->length = length;
         clause->size = length;
@@ -106,41 +109,63 @@ Formula *formula_read_dimacs(char *path) {
         clause_node->prev = last_clause_node;
         if(last_clause_node != NULL)
             last_clause_node->next = clause_node;
-        fgetc(file); // read break line
+        fgetc(stream); // read break line
     }
-    // Close file
-    fclose(file);
+    // Return the formula
     return F;
 }
 
-/** Write a formula for the stardard output */
-void formula_write(Formula *F) {
+/**
+  * 
+  * This function writes the clauses of the formula $F into the
+  * standard output.
+  * 
+  **/
+void formula_printf(Formula *F) {
     ClauseNode *clause_node = F->lst_clauses;
     while(clause_node != NULL) {
-        clause_write(clause_node->clause);
+        clause_printf(clause_node->clause);
         clause_node = clause_node->next;
     }
 }
 
-/** Write a clause for the stardard output */
-void clause_write(Clause *clause) {
+/**
+  * 
+  * This function writes the literals of the clause $clause into the
+  * standard output.
+  * 
+  **/
+void clause_printf(Clause *clause) {
     LiteralNode *literal_node;
     printf("( ");
 	literal_node = clause->lst_literals;
 	while(literal_node != NULL) {
-		literal_write(literal_node->atom, literal_node->literal);
+		literal_printf(literal_node->atom, literal_node->literal);
 		literal_node = literal_node->next;
 	}
 	printf(")");
 }
 
-/** Write a literal for the stardard output */
-void literal_write(Atom atom, Literal literal) {
+/**
+  * 
+  * This function writes the literal ($atom, $literal) into the
+  * standard output. A positive literal is represented by its atom
+  * identifier. A negative literal is represented by its atom identifier
+  * preceded by the minus "-" sign.
+  * 
+  **/
+void literal_printf(Atom atom, Literal literal) {
     printf(literal == NEGATIVE ? "-%d " : "%d ", atom+1);
 }
 
-/** Write a interpretation for the stardard output */
-void formula_write_interpretation(Formula *F) {
+/**
+  * 
+  * This function writes the interpretation of the formula $F into the
+  * standard output. If a variable has no assigned value, it is not
+  * written.
+  * 
+  **/
+void formula_printf_interpretation(Formula *F) {
     int i;
     Bool value;
     for(i = 0; i < F->variables; i++) {
