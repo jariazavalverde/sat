@@ -114,6 +114,7 @@ typedef struct Graph {
   * 
   **/
 Formula *formula_alloc(int nbvar, int nbclauses);
+
 /**
   * 
   * This function creates a clause of $nbvar variables, returning a
@@ -121,6 +122,7 @@ Formula *formula_alloc(int nbvar, int nbclauses);
   * 
   **/
 Clause *clause_alloc(int nbvar);
+
 /**
   * 
   * This function creates a trace of $nbvar variables, returning a
@@ -128,21 +130,48 @@ Clause *clause_alloc(int nbvar);
   * 
   **/
 Trace *trace_alloc(int nbvar);
-/** Initialize a new implication graph */
-void init_graph(Graph *G, int size);
+
+/**
+  * 
+  * This function creates an implication graph of $nbvar variables,
+  * returning a pointer to a newly initialized Graph struct.
+  * 
+  **/
+Graph *graph_alloc(int nbvar);
+
 /**
   * 
   * This function frees a previously allocated formula $F.
   * The clause nodes underlying the formula will also be deallocated.
   * 
   **/
-void *formula_free(Formula *F);
+void formula_free(Formula *F);
+
 /**
   * 
   * This function frees a previously allocated clause $clause.
   * The literal nodes underlying the clause will also be deallocated.
   * 
   **/
-void *clause_free(Clause *clause);
+void clause_free(Clause *clause);
+
+/**
+  * 
+  * This function frees a previously allocated trace $trace.
+  * The trace nodes underlying the trace will also be deallocated.
+  * Clause nodes underlying the trace nodes not will be deallocated.
+  * 
+  **/
+void trace_free(Trace *trace);
+
+/**
+  * 
+  * This function frees a previously allocated graph $G.
+  * The graph nodes underlying the trace will also be deallocated.
+  * Clause nodes underlying the graph nodes not will be deallocated.
+  * 
+  **/
+void graph_free(Graph *G);
+
 /** Add a new node into a graph */
 int add_graph_node(Graph *G, Atom atom, Bool value, int level, Decision decision, Clause *clause);

@@ -81,13 +81,21 @@ Trace *trace_alloc(int nbvar) {
 	return trace;
 }
 
-/** Initialize a new implication graph */
-void init_graph(Graph *G, int size) {
-	G->nodes = malloc((size+1)*sizeof(GraphNode));
-	G->size = size;
+/**
+  * 
+  * This function creates an implication graph of $nbvar variables,
+  * returning a pointer to a newly initialized Graph struct.
+  * 
+  **/
+Graph *graph_alloc(int nbvar) {
+	int i;
+	Graph *G = malloc(sizeof(Graph));
+	G->nodes = malloc((nbvar+1) * sizeof(GraphNode));
+	G->size = nbvar;
 	G->max_level = 0;
-	for(; size >= 0; size--)
-		G->nodes[size] = NULL;
+	for(i = 0; i <= nbvar; i++)
+		G->nodes[i] = NULL;
+	return G;
 }
 
 /**
@@ -96,7 +104,7 @@ void init_graph(Graph *G, int size) {
   * The clause nodes underlying the formula will also be deallocated.
   * 
   **/
-void *formula_free(Formula *F) {
+void formula_free(Formula *F) {
 	int i;
 	// Free clause nodes
 	ClauseNode *clause_node, *next;
@@ -130,7 +138,7 @@ void *formula_free(Formula *F) {
   * The literal nodes underlying the clause will also be deallocated.
   * 
   **/
-void *clause_free(Clause *clause) {
+void clause_free(Clause *clause) {
 	int i;
 	// Free literal nodes
 	for(i = 0; i < clause->size; i++)
@@ -140,6 +148,47 @@ void *clause_free(Clause *clause) {
 	free(clause->arr_literals);
 	// Free clause
 	free(clause);
+}
+
+/**
+  * 
+  * This function frees a previously allocated trace $trace.
+  * The trace nodes underlying the trace will also be deallocated.
+  * Clause nodes underlying the trace nodes not will be deallocated.
+  * 
+  **/
+void trace_free(Trace *trace) {
+	int i;
+	TraceNode *trace_node = trace->lst_traces, *next;
+	// Free literal nodes
+	while(trace_node != NULL) {
+		next = trace_node->next;
+		free(trace_node);
+		trace_node = next;
+	}
+	// Free arrays
+	free(trace->decisions);
+	// Free trace
+	free(trace);
+}
+
+/**
+  * 
+  * This function frees a previously allocated graph $G.
+  * The graph nodes underlying the trace will also be deallocated.
+  * Clause nodes underlying the graph nodes not will be deallocated.
+  * 
+  **/
+void graph_free(Graph *G) {
+	int i;
+	// Free graph nodes
+	for(i = 0; i <= G->size; i++)
+		if(G->nodes[i] != NULL)
+			free(G->nodes[i]);
+	// Free arrays
+	free(G->nodes);
+	// Free graph
+	free(G);
 }
 
 /** Add a new node into a graph */

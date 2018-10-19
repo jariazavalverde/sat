@@ -14,30 +14,34 @@
 /** Check satisfiability of a formula */
 int check_sat(Formula *F) {
     int success = 1, decide = 1;
+    Graph *G;
     Clause *clause;
     Trace *trace;
-    Graph G;
     // Initialize structures
     trace = trace_alloc(F->variables);
-    init_graph(&G, F->variables);
+    G = graph_alloc(F->variables);
     // Unit propagation
-    if(unit_propagation(F, &G, trace) == 0)
+    if(unit_propagation(F, G, trace) == 0)
 		return 0;
     while(F->length > 0 && success) {
         // Split cases
         if(decide)
-			success = split_cases(F, &G, trace);
+			success = split_cases(F, G, trace);
 		decide = 1;
         // Unit propagation
         if(success)
-			success = unit_propagation(F, &G, trace);
+			success = unit_propagation(F, G, trace);
         // Backtracking
-        if(!success && G.max_level > 0) {
-			clause = analyze_conflict(F, &G, trace);
-            success = backtracking(F, &G, trace, clause);
+        if(!success && G->max_level > 0) {
+			clause = analyze_conflict(F, G, trace);
+            success = backtracking(F, G, trace, clause);
             decide = 0;
         }
     }
+    // Free structures
+    trace_free(trace);
+    graph_free(G);
+    // Return result
     return F->length == 0;
 }
 
