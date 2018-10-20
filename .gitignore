@@ -1,4 +1,5 @@
 src/sat
+test/sat
 
 # Prerequisites
 *.d
