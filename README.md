@@ -1,7 +1,4 @@
 # Boolean satisfiability problem
-## A simple SAT solver implemented in C
-
-The **Boolean satisfiability problem** (**SAT**) is the problem of determining if there exists an interpretation that satisfies a given boolean formula.
 
 ## Compilation
 
