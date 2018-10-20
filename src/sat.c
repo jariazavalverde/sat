@@ -135,7 +135,7 @@ int cdcl_decision_state(Formula *F, Graph *G, Trace *trace) {
   * for the clause to be true. This function iterates the unit clauses
   * of the formula $F and tries to satisfy all of them. If any unit 
   * clause can not be satisfied, the function fails and returns 0.
-  * Otherwise, the functon succeeds and returns 1.
+  * Otherwise, the function succeeds and returns 1.
   * 
   **/
 int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace) {
@@ -181,90 +181,33 @@ int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace) {
   * 
   **/
 Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
-	Clause *clause = malloc(sizeof(Clause));
+	Clause *clause;
 	ClauseNode *occurrence;
-	LiteralNode *literal_node = NULL, *first_literal_node = NULL, *last_literal_node = NULL, *prev, *next;
-	LiteralNode **arr_literals = malloc(F->variables * sizeof(LiteralNode*));
-	GraphNode *node;
-	Atom atom;
-	Literal literal;
-	int i, level, length, degree, match;
-	// Initialize array of literals
-	for(i = 0; i < F->variables; i++)
-		arr_literals[i] = NULL;
-	// Get conflictive clause
-	node = G->nodes[G->size];
-	degree = node->degree;
-	length = degree;
-	level = node->level;
-	// Initialize new clause
-	for(i = 0; i < degree; i++) {
-		atom = node->antecedents->literals[i];
-		literal_node = malloc(sizeof(LiteralNode));
-		arr_literals[atom] = literal_node;
-		literal_node->atom = atom;
-		literal_node->literal = node->antecedents->arr_literals[atom]->literal;
-		literal_node->prev = NULL;
-		literal_node->next = last_literal_node;
-		if(last_literal_node != NULL)
-			last_literal_node->prev = literal_node;
-		last_literal_node = literal_node;
-		if(first_literal_node == NULL)
-			first_literal_node = literal_node;
-	}
-	// While literals in level
-	while(first_literal_node != NULL) {
-		// Skip nodes with another level
-		while(first_literal_node != NULL && (G->nodes[first_literal_node->atom]->level != level || G->nodes[first_literal_node->atom]->degree == 0))
-			first_literal_node = first_literal_node->prev;
-		if(first_literal_node != NULL) {
-			node = G->nodes[first_literal_node->atom];
-			degree = node->degree;
-			for(i = 0; i < degree; i++) {
-				atom = node->antecedents->literals[i];
-				literal = node->antecedents->arr_literals[atom]->literal;
-				if(arr_literals[atom] == NULL) {
-					length++;
-					literal_node = malloc(sizeof(LiteralNode));
-					arr_literals[atom] = literal_node;
-					literal_node->atom = atom;
-					literal_node->literal = literal;
-					literal_node->prev = NULL;
-					literal_node->next = last_literal_node;
-					if(last_literal_node != NULL)
-						last_literal_node->prev = literal_node;
-					last_literal_node = literal_node;
-				} else if(literal != arr_literals[atom]->literal) {
-					length--;
-					next = arr_literals[atom]->next;
-					prev = arr_literals[atom]->prev;
-					if(prev != NULL)
-						prev->next = next;
-					else
-						last_literal_node = next;
-					if(next != NULL)
-						next->prev = prev;
-					if(first_literal_node == arr_literals[atom])
-						first_literal_node = prev;
-					free(arr_literals[atom]);
-					arr_literals[atom] = NULL;
-				}
-			}
-		}
-	}
-	// Create clause
+	LiteralNode *literal_node;
+	int i, level;
+	// Initilize clause
+	clause = clause_alloc(F->variables);
 	clause->id = F->size;
-	clause->literals = malloc(length*sizeof(int));
-	clause->arr_literals = arr_literals;
-	clause->lst_literals = NULL;
+	// Get conflictive clause and decision level
+	level = G->nodes[G->size]->level;
+	cdcl_resolution(clause, G->nodes[G->size]->antecedents, NULL);
+	literal_node = clause->arr_literals[G->nodes[G->size]->antecedents->literals[0]];
+	// While there are literals on the conflictive level
+	while(literal_node != NULL) {
+		// Drop literals with less decision level
+		while(literal_node != NULL && (G->nodes[literal_node->atom]->level != level || G->nodes[literal_node->atom]->degree == 0))
+			literal_node = literal_node->prev;
+		// Apply a resolution step
+		if(literal_node != NULL)
+			cdcl_resolution(clause, G->nodes[literal_node->atom]->antecedents, &literal_node);
+	}
 	clause->length = 0;
-	clause->size = length;
-	clause->lst_literals = NULL;
+	clause->literals = malloc(clause->size * sizeof(int));
 	// Append clause to the formula
 	formula_append_clause(F, clause);
 	// Update occurrence nodes and trace
-	literal_node = last_literal_node;
-	for(i = 0; i < length; i++) {
+	for(i = 0; i < clause->size; i++) {
+		literal_node = clause->lst_literals;
 		clause->literals[i] = literal_node->atom;
 		// Occurrence clause node
 		occurrence = malloc(sizeof(ClauseNode));
@@ -275,9 +218,57 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 			F->occurrences[literal_node->atom]->prev = occurrence;
 		F->occurrences[literal_node->atom] = occurrence;
 		trace_append(trace, clause, literal_node->atom, literal_node->literal);
-		literal_node = literal_node->next;
+		clause->lst_literals = literal_node->next;
 	}
 	return clause;
+}
+
+/**
+  * 
+  * The resolution rule is a single valid inference rule that produces
+  * a new clause implied by two clauses containing complementary
+  * literals. This function applies the resolution rule over the clauses
+  * $clause_a and $clause_b. The first clause, $clause_a, is also used
+  * as the resolvent of the resolution. 
+  * 
+  **/
+void cdcl_resolution(Clause *clause_a, Clause *clause_b, LiteralNode **ptr) {
+	int i, degree = clause_b->size;
+	Atom atom;
+	Literal literal;
+	LiteralNode *literal_node, *next, *prev;
+	for(i = 0; i < degree; i++) {
+		atom = clause_b->literals[i];
+		literal = clause_b->arr_literals[atom]->literal;
+		if(clause_a->arr_literals[atom] == NULL) {
+			clause_a->length++;
+			clause_a->size++;
+			literal_node = malloc(sizeof(LiteralNode));
+			clause_a->arr_literals[atom] = literal_node;
+			literal_node->atom = atom;
+			literal_node->literal = literal;
+			literal_node->prev = NULL;
+			literal_node->next = clause_a->lst_literals;
+			if(clause_a->lst_literals != NULL)
+				clause_a->lst_literals->prev = literal_node;
+			clause_a->lst_literals = literal_node;
+		} else if(literal != clause_a->arr_literals[atom]->literal) {
+			clause_a->length--;
+			clause_a->size--;
+			next = clause_a->arr_literals[atom]->next;
+			prev = clause_a->arr_literals[atom]->prev;
+			if(prev != NULL)
+				prev->next = next;
+			else
+				clause_a->lst_literals = next;
+			if(next != NULL)
+				next->prev = prev;
+			if(*ptr != NULL && *ptr == clause_a->arr_literals[atom])
+				*ptr = prev;
+			free(clause_a->arr_literals[atom]);
+			clause_a->arr_literals[atom] = NULL;
+		}
+	}
 }
 
 /**

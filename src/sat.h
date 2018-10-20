@@ -52,7 +52,7 @@ int cdcl_decision_state(Formula *F, Graph *G, Trace *trace);
   * for the clause to be true. This function iterates the unit clauses
   * of the formula $F and tries to satisfy all of them. If any unit 
   * clause can not be satisfied, the function fails and returns 0.
-  * Otherwise, the functon succeeds and returns 1.
+  * Otherwise, the function succeeds and returns 1.
   * 
   **/
 int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace);
@@ -65,6 +65,17 @@ int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace);
   * 
   **/
 Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace);
+
+/**
+  * 
+  * The resolution rule is a single valid inference rule that produces
+  * a new clause implied by two clauses containing complementary
+  * literals. This function applies the resolution rule over the clauses
+  * $clause_a and $clause_b. The first clause, $clause_a, is also used
+  * as the resolvent of the resolution. 
+  * 
+  **/
+void cdcl_resolution(Clause *clause_a, Clause *clause_b, LiteralNode **ptr);
 
 /**
   * 

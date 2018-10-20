@@ -207,7 +207,6 @@ void formula_append_clause(Formula *F, Clause *clause) {
 	clause_node->next = F->lst_clauses;
 	clause_node->prev = NULL;
 	// Initialize unit clause node
-	unit_clause = malloc(sizeof(ClauseNode));
 	unit_clause->clause = clause;
 	unit_clause->next = NULL;
 	unit_clause->prev = NULL;
@@ -221,6 +220,7 @@ void formula_append_clause(Formula *F, Clause *clause) {
 		F->arr_unit_clauses = realloc(F->arr_unit_clauses, F->alloc_size * sizeof(ClauseNode*));
 		F->sat_clauses = realloc(F->sat_clauses, F->alloc_size * sizeof(int));
 	}
+	// Add clause in the first free block
 	F->sat_clauses[size] = 0;
 	F->arr_clauses[size] = clause_node;
 	F->arr_unit_clauses[size] = unit_clause;
