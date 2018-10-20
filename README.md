@@ -15,7 +15,7 @@ $ ./sat "path/to/file.cnf" [-t] [-i]
 * **-t** - shows the execution time
 * **-i** - shows the formula, the number of variables and the number of clauses
 
-### DIMACS CNF file format
+#### DIMACS CNF file format
 
 This format is used to define a bolean expression, written in **conjunctive normal form** (**CNF**), that may be used as an example of the **satisfiability problem**. A formula is in conjunctive normal form if it is a conjunction of one or more clauses, where a clause is a disjunction of literals.
 
@@ -38,7 +38,7 @@ p cnf 3 2
 1 -3 0
 2 3 -1 0
 ```
-*Reference: [https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html](https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html)*
+**Reference:** [https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html](https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html)
 
 ## Example
 
