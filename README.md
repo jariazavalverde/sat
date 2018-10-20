@@ -1,7 +1,4 @@
 # Boolean satisfiability problem
-## A simple SAT solver implemented in C
-
-The **Boolean satisfiability problem** (**SAT**) is the problem of determining if there exists an interpretation that satisfies a given boolean formula.
 
 ## Compilation
 
@@ -18,7 +15,7 @@ $ ./sat "path/to/file.cnf" [-t] [-i]
 * **-t** - shows the execution time
 * **-i** - shows the formula, the number of variables and the number of clauses
 
-### DIMACS CNF file format
+#### DIMACS CNF file format
 
 This format is used to define a bolean expression, written in **conjunctive normal form** (**CNF**), that may be used as an example of the **satisfiability problem**. A formula is in conjunctive normal form if it is a conjunction of one or more clauses, where a clause is a disjunction of literals.
 
@@ -41,7 +38,7 @@ p cnf 3 2
 1 -3 0
 2 3 -1 0
 ```
-*Reference: [https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html](https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html)*
+**Reference:** [https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html](https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html)
 
 ## Example
 
@@ -60,4 +57,4 @@ SAT
 
 ## License
 
-The source code of this repository (located in the [**src** folder](src)) is released under the terms of the [BSD 3-Clause License](LICENSE). Sample files included in the [**examples** folder](examples) were originally taken from [here](https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html) and are released under the [GNU LGPL License](https://people.sc.fsu.edu/~jburkardt/txt/gnu_lgpl.txt).
+The source code of this repository (located in the [**src** folder](src)) is released under the terms of the [BSD 3-Clause License](LICENSE). Sample files included in the [**examples** folder](examples) were originally taken from [here](https://www.cs.ubc.ca/~hoos/SATLIB/benchm.html).
