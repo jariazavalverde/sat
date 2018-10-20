@@ -18,8 +18,8 @@ else
 	echo -e "\e[39mdone!"
 fi
 
-# TEST SAT PROGRAMS FROM $1 DIRECTORY
-echo -e "\e[39mTesting SAT programs..."
+# TEST SAT PROGRAMS FROM $1 DIRECTORY WITH VALGRIND
+echo -e "\e[39mTesting SAT programs with valgrind..."
 
 # Number of tests
 i=0
@@ -36,26 +36,27 @@ for p in `find $1 -name \*.cnf -print`; do
 	# Update number of files
 	i=$((i+1))
 	
-	# Run SAT solver with timeout
-	c=`timeout ${2:-1}s ./sat "$p"`
+	# Run SAT solver in valgrind with timeout
+	c=`timeout ${2:-2}s valgrind --log-file=sat.log ./sat "$p"`
+	
+	# Get summary
+	summary=`tail -n 1 sat.log | cut -d$':' -f2 | cut -d$'(' -f1`
 	
 	# If SAT program ends
 	if [ "$c" != "" ] ; then
 		# Get satisfiability status (SAT or UNSAT)
-		s=`echo $c | cut -d$' ' -f1`
-		# Get model (if exists)
-		m=`echo .$c | cut -d$' ' -f2-`
-		# Print status (ERROR, SAT or UNSAT)
-		if [ "$s" != "SAT" ] && [ "$s" != "UNSAT" ] ; then
-			echo -e "\e[39m($i) \e[31m$p ERROR!\e[39m"
+		sat=`echo $c | cut -d$' ' -f1`
+		# Print status (ERROR, SAT or UNSAT) and summary
+		if [ "$sat" != "SAT" ] && [ "$sat" != "UNSAT" ] ; then
+			echo -e "\e[39m($i) \e[31m$p ERROR!$summary\e[39m"
 			errors=$((errors+1))
 		else
-			echo -e "\e[39m($i) \e[32m$p $s!\e[39m"
+			echo -e "\e[39m($i) \e[32m$p $sat!$summary\e[39m"
 			success=$((success+1))
 		fi
 	# If SAT program doesn't end
 	else
-		echo -e "\e[39m($i) \e[96m$p TIMEOUT!\e[39m"
+		echo -e "\e[39m($i) \e[96m$p TIMEOUT!$summary\e[39m"
 		timeout=$((timeout+1))
 	fi
 	
