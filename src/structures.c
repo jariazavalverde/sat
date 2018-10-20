@@ -22,6 +22,7 @@ Formula *formula_alloc(int nbvar, int nbclauses) {
 	Formula *F = malloc(sizeof(Formula));
 	F->arr_clauses = malloc(nbclauses * sizeof(ClauseNode*));
 	F->arr_unit_clauses = malloc(nbclauses * sizeof(ClauseNode*));
+	F->unit = malloc(nbclauses * sizeof(int));
 	F->sat_clauses = malloc(nbclauses * sizeof(ClauseNode*));
 	F->occurrences = malloc(nbvar * sizeof(ClauseNode*));
 	F->interpretation = malloc(nbvar * sizeof(Bool));
@@ -126,6 +127,7 @@ void formula_free(Formula *F) {
 	free(F->arr_clauses);
 	free(F->arr_unit_clauses);
 	free(F->sat_clauses);
+	free(F->unit);
 	free(F->occurrences);
 	free(F->interpretation);
 	// Free formula
@@ -219,6 +221,7 @@ void formula_append_clause(Formula *F, Clause *clause) {
 		F->arr_clauses = realloc(F->arr_clauses, F->alloc_size * sizeof(ClauseNode*));
 		F->arr_unit_clauses = realloc(F->arr_unit_clauses, F->alloc_size * sizeof(ClauseNode*));
 		F->sat_clauses = realloc(F->sat_clauses, F->alloc_size * sizeof(int));
+		F->unit = realloc(F->unit, F->alloc_size * sizeof(int));
 	}
 	// Add clause in the first free block
 	F->sat_clauses[size] = 0;

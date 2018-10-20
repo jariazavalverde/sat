@@ -66,6 +66,7 @@ typedef struct Formula {
 	int *sat_clauses;			    // Satisfiable clauses
 	ClauseNode **arr_unit_clauses;  // Array of unit clauses
 	ClauseNode *lst_unit_clauses;   // Linked-list of unit clauses
+	int *unit;                      // Array of identifiers of unit clauses
 	ClauseNode **occurrences;	    // Clauses where occurs each variable
 	Bool *interpretation;		    // Array of values for interpretation
 } Formula;

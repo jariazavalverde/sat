@@ -142,32 +142,33 @@ int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace) {
 	LiteralNode *literal_node;
 	ClauseNode *clause_node, *next;
 	Clause *clause;
+	int i, length;
 	Atom atom;
 	Bool value;
-	int change = 1;
-	while(change) {
-		change = 0;
-		clause_node = F->lst_clauses;
-		F->lst_unit_clauses = NULL;
-		// Iterate unit clauses
+	while(F->lst_unit_clauses != NULL) {
+		clause_node = F->lst_unit_clauses;
+		length = 0;
+		// Get unit clauses into an array
 		while(clause_node != NULL) {
-			// Update unit clause nodes
-			clause = clause_node->clause;
-			literal_node = clause->lst_literals;
-			atom = literal_node->atom;
+			F->unit[length] = clause_node->clause->id;
+			clause_node = clause_node->next;
+			length++;
+		}
+		// Iterate unit clauses
+		for(i = 0; i < length; i++) {
+			clause = F->arr_clauses[F->unit[i]]->clause;
+			atom = clause->lst_literals->atom;
 			// Check if variable has value
 			if(F->sat_clauses[clause->id] == 0 && clause->length == 1 && F->interpretation[atom] == UNKNOWN) {
-				change = 1;
-				value = literal_node->literal == NEGATIVE ? FALSE : TRUE;
-				// Push action
+				value = clause->lst_literals->literal == NEGATIVE ? FALSE : TRUE;
+				// Push trace
 				trace_push(trace, NULL, atom, NONE);
-				// Add graph node
+				// Set graph node
 				graph_set_node(G, atom, value, G->decision_level, FORCED, clause);
 				// Replace variable
 				if(cdcl_replace_variable(F, G, trace, atom, value) == 0)
 					return 0;
 			}
-			clause_node = clause_node->next;
 		}
 	}
 	return 1;
