@@ -27,8 +27,8 @@ i=0
 errors=0
 # Total number of success
 success=0
-# Total number of timeouts
-timeout=0
+# Total number of valgrin errors
+leaks=0
 
 # Iterate files from /examples directory
 for p in `find $1 -name \*.cnf -print`; do
@@ -42,29 +42,36 @@ for p in `find $1 -name \*.cnf -print`; do
 	# Get summary
 	summary=`tail -n 1 sat.log | cut -d$':' -f2 | cut -d$'(' -f1`
 	
+	# Get number of valgrin errors
+	leak=`echo $summary | cut -d$' ' -f1`
+	leaks=$((leak+leaks))
+	
 	# If SAT program ends
 	if [ "$c" != "" ] ; then
 		# Get satisfiability status (SAT or UNSAT)
 		sat=`echo $c | cut -d$' ' -f1`
-		# Print status (ERROR, SAT or UNSAT) and summary
+		# Update status if there is an error in the execution
 		if [ "$sat" != "SAT" ] && [ "$sat" != "UNSAT" ] ; then
-			echo -e "\e[39m($i) \e[31m$p ERROR!$summary\e[39m"
-			errors=$((errors+1))
-		else
-			echo -e "\e[39m($i) \e[32m$p $sat!$summary\e[39m"
-			success=$((success+1))
+			sat="ERROR"
 		fi
 	# If SAT program doesn't end
 	else
-		echo -e "\e[39m($i) \e[96m$p TIMEOUT!$summary\e[39m"
-		timeout=$((timeout+1))
+		sat="TIMEOUT"
 	fi
 	
+	# Print status
+	if [ $leak -eq 0 ] ; then
+		echo -e "\e[39m($i) \e[32m$p $sat!\e[39m"
+		success=$((success+1))
+	else
+		echo -e "\e[39m($i) \e[31m$p $sat! $leak ERRORS! \e[39m"
+		errors=$((errors+1))
+	fi
+
 done
 
 echo -e "\e[39mdone!\e[39m"
 
 # Print statistics
 echo -e "\e[32m$success SUCCESS!\e[39m"
-echo -e "\e[31m$errors ERRORS!\e[39m"
-echo -e "\e[96m$timeout TIMEOUTS!\e[39m"
+echo -e "\e[31m$leaks ERRORS IN $errors PROGRAMS!\e[39m"
