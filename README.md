@@ -60,4 +60,4 @@ SAT
 
 ## License
 
-The source code of this repository (located in the [**src** folder](src)) is released under the terms of the [BSD 3-Clause License](LICENSE). Sample files included in the [**examples** folder](examples) were originally taken from [here](https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html) and are released under the [GNU LGPL License](https://people.sc.fsu.edu/~jburkardt/txt/gnu_lgpl.txt).
+The source code of this repository (located in the [**src** folder](src)) is released under the terms of the [BSD 3-Clause License](LICENSE). Sample files included in the [**examples** folder](examples) were originally taken from [here](https://www.cs.ubc.ca/~hoos/SATLIB/benchm.html).
