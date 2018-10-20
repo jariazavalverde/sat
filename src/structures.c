@@ -193,6 +193,52 @@ void graph_free(Graph *G) {
 
 /**
   * 
+  * This function appends the clause $clause into the formula $F. If
+  * there is not enough space in memory, the formula $F is rellocated.
+  * 
+  **/
+void formula_append_clause(Formula *F, Clause *clause) {
+	int size = F->size;
+	ClauseNode *clause_node, *unit_clause;
+	clause_node = malloc(sizeof(ClauseNode));
+	unit_clause = malloc(sizeof(ClauseNode));
+	// Initialize clause node
+	clause_node->clause = clause;
+	clause_node->next = F->lst_clauses;
+	clause_node->prev = NULL;
+	// Initialize unit clause node
+	unit_clause = malloc(sizeof(ClauseNode));
+	unit_clause->clause = clause;
+	unit_clause->next = NULL;
+	unit_clause->prev = NULL;
+	// Increment size and length
+	F->size++;
+	F->length++;
+	// Reallocate formula if needed
+	if(F->size > F->alloc_size) {
+		F->alloc_size += F->original_size;
+		F->arr_clauses = realloc(F->arr_clauses, F->alloc_size * sizeof(ClauseNode*));
+		F->arr_unit_clauses = realloc(F->arr_unit_clauses, F->alloc_size * sizeof(ClauseNode*));
+		F->sat_clauses = realloc(F->sat_clauses, F->alloc_size * sizeof(int));
+	}
+	F->sat_clauses[size] = 0;
+	F->arr_clauses[size] = clause_node;
+	F->arr_unit_clauses[size] = unit_clause;
+	// Put clause node
+	if(F->lst_clauses != NULL)
+		F->lst_clauses->prev = clause_node;
+	F->lst_clauses = clause_node;
+	// Put unit clause node
+	if(clause->length == 1) {
+		if(F->lst_unit_clauses != NULL)
+			F->lst_unit_clauses->prev = unit_clause;
+		unit_clause->next = F->lst_unit_clauses;
+		F->lst_unit_clauses = unit_clause;
+	}
+}
+
+/**
+  * 
   * This function retracts the clause with id $clause_id from the
   * formula $F. If the clause is unit, it is also retracted from the
   * unit clauses array of $F.

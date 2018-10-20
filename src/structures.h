@@ -175,6 +175,14 @@ void graph_free(Graph *G);
 
 /**
   * 
+  * This function appends the clause $clause into the formula $F. If
+  * there is not enough space in memory, the formula $F is rellocated.
+  * 
+  **/
+void formula_append_clause(Formula *F, Clause *clause);
+
+/**
+  * 
   * This function retracts the clause with id $clause_id from the
   * formula $F. If the clause is unit, it is also retracted from the
   * unit clauses array of $F.

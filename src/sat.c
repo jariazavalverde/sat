@@ -182,11 +182,11 @@ int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace) {
   **/
 Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	Clause *clause = malloc(sizeof(Clause));
-	ClauseNode *clause_node, *unit_clause, *occurrence;
+	ClauseNode *occurrence;
 	LiteralNode *literal_node = NULL, *first_literal_node = NULL, *last_literal_node = NULL, *prev, *next;
 	LiteralNode **arr_literals = malloc(F->variables * sizeof(LiteralNode*));
 	GraphNode *node;
-	Atom atom, resolvent;
+	Atom atom;
 	Literal literal;
 	int i, level, length, degree, match;
 	// Initialize array of literals
@@ -218,8 +218,7 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 		while(first_literal_node != NULL && (G->nodes[first_literal_node->atom]->level != level || G->nodes[first_literal_node->atom]->degree == 0))
 			first_literal_node = first_literal_node->prev;
 		if(first_literal_node != NULL) {
-			resolvent = first_literal_node->atom;
-			node = G->nodes[resolvent];
+			node = G->nodes[first_literal_node->atom];
 			degree = node->degree;
 			for(i = 0; i < degree; i++) {
 				atom = node->antecedents->literals[i];
@@ -261,32 +260,9 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	clause->length = 0;
 	clause->size = length;
 	clause->lst_literals = NULL;
-	// Create clause node
-	clause_node = malloc(sizeof(ClauseNode));
-	clause_node->clause = clause;
-	clause_node->next = F->lst_clauses;
-	clause_node->prev = NULL;
-	// Create unit node
-	unit_clause = malloc(sizeof(ClauseNode));
-	unit_clause->clause = clause;
-	unit_clause->next = NULL;
-	unit_clause->prev = NULL;
-	// Add clause to the formula
-	F->size++;
-	F->length++;
-	// Realloc formula
-	if(F->size > F->alloc_size) {
-		F->alloc_size += F->original_size;
-		F->arr_clauses = realloc(F->arr_clauses, F->alloc_size * sizeof(ClauseNode*));
-		F->arr_unit_clauses = realloc(F->arr_unit_clauses, F->alloc_size * sizeof(ClauseNode*));
-		F->sat_clauses = realloc(F->sat_clauses, F->alloc_size * sizeof(int));
-	}
-	F->sat_clauses[F->size-1] = 0;
-	F->arr_clauses[F->size-1] = clause_node;
-	F->arr_unit_clauses[F->size-1] = unit_clause;
-	if(F->lst_clauses != NULL)
-		F->lst_clauses->prev = clause_node;
-	F->lst_clauses = clause_node;
+	// Append clause to the formula
+	formula_append_clause(F, clause);
+	// Update occurrence nodes and trace
 	literal_node = last_literal_node;
 	for(i = 0; i < length; i++) {
 		clause->literals[i] = literal_node->atom;
