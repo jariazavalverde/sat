@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# CHECK DIRECTORY OF EXAMPLES
+if [ ! -d "$1" ] ; then
+	echo -e "\e[39mdirectory \"$1\" not found!"
+	exit
+fi
+
 # COMPILE SOURCE FILES AND GENERATE AN EXECUTABLE
 echo -e "\e[39mCompiling source files..."
 c=`gcc -I/usr/include -L/usr/lib ../src/main.c ../src/io.h ../src/io.c ../src/structures.c ../src/structures.h ../src/sat.h ../src/sat.c -o sat`
@@ -25,13 +31,13 @@ success=0
 timeout=0
 
 # Iterate files from /examples directory
-for p in `find ../examples -name \*.cnf -print`; do
+for p in `find $1 -name \*.cnf -print`; do
 
 	# Update number of files
 	i=$((i+1))
 	
 	# Run SAT solver with timeout
-	c=`timeout ${1:-1}s ./sat "$p"`
+	c=`timeout ${2:-1}s ./sat "$p"`
 	
 	# If SAT program ends
 	if [ "$c" != "" ] ; then
