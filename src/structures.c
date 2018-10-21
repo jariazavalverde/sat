@@ -30,7 +30,11 @@ Formula *formula_alloc(int nbvar, int nbclauses) {
 	F->lst_unit_clauses = NULL;
 	F->length = nbclauses;
 	F->nbclauses = nbclauses;
-	F->nbclauses_learnt = 0;
+	F->nb_learnt_clauses = 0;
+	F->nb_decisions = 0;
+	F->nb_propagations = 0;
+	F->nb_conflicts = 0;
+	F->execution_time = 0.0;
 	F->original_size = nbclauses;
 	F->alloc_size = nbclauses;
 	F->nbvar = nbvar;

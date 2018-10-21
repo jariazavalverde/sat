@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include "io.h"
 #include "structures.h"
 #include "sat.h"
@@ -19,9 +18,8 @@
 
 int main(int argc, char **argv) {
 	FILE *stream;
-	clock_t begin, end;
 	double time_spent;
-	int i, sat, op_time = 0, op_info = 0;
+	int i, sat, op_stats = 0;
 	Formula *F;
 	// Check minimum number of arguments
 	if(argc < 2) {
@@ -29,40 +27,27 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	// Check options
-	for(i = 2; i < argc; i++) {
-		if(strcmp(argv[i], "-t") == 0)
-			op_time = 1;
-		else if(strcmp(argv[i], "-i") == 0)
-			op_info = 1;
+	for(i = 1; i < argc-1; i++) {
+		if(strcmp(argv[i], "-st") == 0)
+			op_stats = 1;
 	}
 	// Read formula
-	stream = fopen(argv[1], "r");
-	// Formula is ok
+	stream = fopen(argv[argc-1], "r");
+	// File is ok
 	if(stream != NULL) {
 		F = formula_fread_dimacs(stream);
 		fclose(stream);
+		// Formula is ok
 		if(F != NULL) {
-			// Show information
-			if(op_info) {
-				formula_printf(F);
-				printf("\nNumber of clauses: %d\n", F->nbclauses);
-				printf("Number of variables: %d\n", F->nbvar);
-			}
-			begin = clock();
 			// Check satisfiability
 			sat = formula_check_sat(F);
-			end = clock();
-			// Show execution time
-			if(op_time) {
-				time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-				printf("Execution time: %f seconds.\n", time_spent);
-			}
 			// Show SAT result
-			printf(sat ? "SAT\n" : "UNSAT\n");
-			if(sat) {
+			printf(sat ? "sat\n" : "unsat\n");
+			if(sat)
 				formula_printf_interpretation(F);
-				printf("\n");
-			}
+			// Show statistics
+			if(op_stats)
+				formula_printf_statistics(F);
 			// Free formula
 			formula_free(F);
 		// Error reading formula

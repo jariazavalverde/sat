@@ -63,13 +63,17 @@ typedef struct Formula {
 	int original_size;			    // Original size
 	int alloc_size;			        // Number of clauses allocated
 	int nbvar;				        // Number of unique variables
-	int nbclauses_learnt;           // Total number of learnt clauses
 	int *sat_clauses;			    // Satisfiable clauses
 	ClauseNode **arr_unit_clauses;  // Array of unit clauses
 	ClauseNode *lst_unit_clauses;   // Linked-list of unit clauses
 	int *unit;                      // Array of identifiers of unit clauses
 	ClauseNode **occurrences;	    // Clauses where occurs each variable
 	Bool *interpretation;		    // Array of values for interpretation
+	int nb_learnt_clauses;          // Total number of learnt clauses
+	int nb_decisions;               // Total number of decisions
+	int nb_propagations;            // Total number of unit propagations
+	int nb_conflicts;               // Total number of conflicts
+	double execution_time;          // Total execution time
 } Formula;
 
 /** Data structures for trace execution */

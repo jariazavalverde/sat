@@ -1,4 +1,10 @@
 #!/bin/bash
+# Filename: test-sat-run.sh
+# Description: Test sat program
+# Authors: José Antonio Riaza Valverde
+# Updated: 21.10.2018 
+
+
 
 # CHECK DIRECTORY OF EXAMPLES
 if [ ! -d "$1" ] ; then
@@ -46,7 +52,7 @@ for p in `find $1 -name \*.cnf -print`; do
 		# Get model (if exists)
 		m=`echo .$c | cut -d$' ' -f2-`
 		# Print status (ERROR, SAT or UNSAT)
-		if [ "$s" != "SAT" ] && [ "$s" != "UNSAT" ] ; then
+		if [ "$s" != "sat" ] && [ "$s" != "unsat" ] ; then
 			echo -e "\e[39m($i) \e[31m$p ERROR!\e[39m"
 			errors=$((errors+1))
 		else

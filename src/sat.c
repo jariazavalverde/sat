@@ -10,18 +10,34 @@
 #include "sat.h"
 
 
+/**
+  *
+  * This function checks the satisfiability of the formula $F. If $F
+  * is satisfiable, the functions returns 1 and the interpretation for
+  * $F is set in $F->interpretation. Otherwise, the function returns 0.
+  *  
+  **/
+int formula_check_sat(Formula *F) {
+	clock_t begin, end;
+	int sat;
+	begin = clock();
+	sat = cdcl_check_sat(F);
+	end = clock();
+	F->execution_time = (double)(end - begin) / CLOCKS_PER_SEC;
+	return sat;
+}
 
 /**
   * 
   * This function checks the satisfiability of the formula $F,
   * following the Conflict-driven clause learning algorithm. If $F
-  * is satisfiable, the functions returns 1 and an interpretation for
+  * is satisfiable, the functions returns 1 and the interpretation for
   * $F is set in $F->interpretation. Otherwise, the function returns 0.
   * The original formula $F can be modified by assertion or retraction
   * of clauses and literals, or by addition of new clauses.
   * 
   **/
-int formula_check_sat(Formula *F) {
+int cdcl_check_sat(Formula *F) {
 	int success = 1, decide = 1;
 	Graph *G;
 	Clause *clause;
@@ -33,7 +49,7 @@ int formula_check_sat(Formula *F) {
 	if(cdcl_unit_propagation(F, G, trace) == 0)
 		return 0;
 	while(F->length > 0 && success) {
-		// Split cases
+		// Decision state
 		if(decide)
 			success = cdcl_decision_state(F, G, trace);
 		decide = 1;
@@ -83,6 +99,7 @@ int cdcl_replace_variable(Formula *F, Graph *G, Trace *trace, Atom atom, Bool va
 			// else, remove the literal from the clause
 			} else {
 				if(clause->length == 1) {
+					F->nb_conflicts++;
 					// Add conflictive node
 					graph_set_node(G, atom, value, G->decision_level, CONFLICTIVE, clause);
 					return 0;
@@ -122,6 +139,7 @@ int cdcl_decision_state(Formula *F, Graph *G, Trace *trace) {
 			value = literal == NEGATIVE ? FALSE : TRUE;
 			trace_push(trace, NULL, atom, NONE);
 			graph_set_node(G, atom, value, G->decision_level, ARBITRARY, NULL);
+			F->nb_decisions++;
 			return cdcl_replace_variable(F, G, trace, atom, value);
 		}
 		return 0;
@@ -160,6 +178,7 @@ int cdcl_unit_propagation(Formula *F, Graph *G, Trace *trace) {
 			atom = clause->lst_literals->atom;
 			// Check if variable has value
 			if(F->sat_clauses[clause->id] == 0 && clause->length == 1 && F->interpretation[atom] == UNKNOWN) {
+				F->nb_propagations++;
 				value = clause->lst_literals->literal == NEGATIVE ? FALSE : TRUE;
 				// Push trace
 				trace_push(trace, NULL, atom, NONE);
@@ -206,7 +225,7 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	clause->literals = malloc(clause->size * sizeof(int));
 	// Append clause to the formula
 	formula_append_clause(F, clause);
-	F->nbclauses_learnt++;
+	F->nb_learnt_clauses++;
 	// Update occurrence nodes and trace
 	for(i = 0; i < clause->size; i++) {
 		literal_node = clause->lst_literals;

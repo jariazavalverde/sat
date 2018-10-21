@@ -8,21 +8,31 @@
  *H*/
 
 #include <stdlib.h>
+#include <time.h>
 #include "structures.h"
 
 
 
 /**
+  *
+  * This function checks the satisfiability of the formula $F. If $F
+  * is satisfiable, the functions returns 1 and the interpretation for
+  * $F is set in $F->interpretation. Otherwise, the function returns 0.
+  *  
+  **/
+int formula_check_sat(Formula *F);
+
+/**
   * 
   * This function checks the satisfiability of the formula $F,
   * following the Conflict-driven clause learning algorithm. If $F
-  * is satisfiable, the functions returns 1 and an interpretation for
+  * is satisfiable, the functions returns 1 and the interpretation for
   * $F is set in $F->interpretation. Otherwise, the function returns 0.
   * The original formula $F can be modified by assertion or retraction
   * of clauses and literals, or by addition of new clauses.
   * 
   **/
-int formula_check_sat(Formula *F);
+int cdcl_check_sat(Formula *F);
 
 /**
   * 

@@ -175,4 +175,24 @@ void formula_printf_interpretation(Formula *F) {
 		else if(value == FALSE)
 			printf("-%d ", i+1);
 	}
+	printf("\n");
+}
+
+/**
+ * 
+ * This functions writes different statistics into the standard output.
+ * - decisions: number of decisions
+ * - propagations: number of unit propagations
+ * - conflicts: number of conflicts
+ * - total-time: number of total time
+ * 
+ **/
+void formula_printf_statistics(Formula *F) {
+	printf(
+		"(:decisions    %d\n :propagations %d\n :conflicts    %d\n :total-time   %.2f)\n",
+		F->nb_decisions, 
+		F->nb_propagations,
+		F->nb_conflicts,
+		F->execution_time
+	);
 }

@@ -3,7 +3,7 @@
  * FILENAME: io.h
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 19.10.2018
+ * UPDATED: 21.10.2018
  * 
  *H*/
 
@@ -56,3 +56,14 @@ void literal_printf(Atom atom, Literal literal);
   * 
   **/
 void formula_printf_interpretation(Formula *F);
+
+/**
+ * 
+ * This functions writes different statistics into the standard output.
+ * - decisions: number of decisions
+ * - propagations: number of unit propagations
+ * - conflicts: number of conflicts
+ * - total-time: number of total time
+ * 
+ **/
+void formula_printf_statistics(Formula *F);

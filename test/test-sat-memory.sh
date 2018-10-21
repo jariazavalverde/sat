@@ -1,4 +1,10 @@
 #!/bin/bash
+# Filename: test-sat-memory.sh
+# Description: Test memory leak in sat program with valgrind
+# Authors: José Antonio Riaza Valverde
+# Updated: 21.10.2018 
+
+
 
 # CHECK DIRECTORY OF EXAMPLES
 if [ ! -d "$1" ] ; then
@@ -51,7 +57,7 @@ for p in `find $1 -name \*.cnf -print`; do
 		# Get satisfiability status (SAT or UNSAT)
 		sat=`echo $c | cut -d$' ' -f1`
 		# Update status if there is an error in the execution
-		if [ "$sat" != "SAT" ] && [ "$sat" != "UNSAT" ] ; then
+		if [ "$sat" != "sat" ] && [ "$sat" != "unsat" ] ; then
 			sat="ERROR"
 		fi
 	# If SAT program doesn't end
