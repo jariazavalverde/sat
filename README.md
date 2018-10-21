@@ -43,7 +43,7 @@ p cnf 3 2
 ## Example
 
 ```shell
-$ ./sat "examples/par8-1-c.cnf" -t -i
+$ ./sat "sample/parity/par8-1-c.cnf" -t -i
 ```
 
 ```shell
@@ -57,4 +57,4 @@ SAT
 
 ## License
 
-The source code of this repository (located in the [**src** folder](src)) is released under the terms of the [BSD 3-Clause License](LICENSE). Sample files included in the [**examples** folder](examples) were originally taken from [here](https://www.cs.ubc.ca/~hoos/SATLIB/benchm.html).
+The source code of this repository (located in the [**src** folder](src)) is released under the terms of the [BSD 3-Clause License](LICENSE). Sample files included in the [**sample** folder](sample) were originally taken from [here](https://www.cs.ubc.ca/~hoos/SATLIB/benchm.html).
