@@ -33,8 +33,7 @@ else if(isset($_POST["problem"]))
 					</div></div>
 					<div class="column-right"><div>
 						<h3><i class="fas fa-list-alt"></i> Options</h3>
-						<div class="option"><input type="checkbox" name="info" id="info" <?php if(isset($_POST["info"])) echo "checked=\"checked\""; ?> /> <label for="info"><i class="fas fa-info-circle"></i> Show information <span class="legend">(formula, number of variables and number of clauses)</span></label></div>
-						<div class="option"><input type="checkbox" name="time" id="time" <?php if(isset($_POST["time"])) echo "checked=\"checked\""; ?> /> <label for="time"><i class="fas fa-clock"></i> Show execution time <span class="legend">(in seconds)</span></label></div>
+						<div class="option"><input type="checkbox" name="st" id="st" <?php if(isset($_POST["st"])) echo "checked=\"checked\""; ?> /> <label for="st"><i class="fas fa-clock"></i> Display statistics <span class="legend">(decisions, propagations, execution time, ...)</span></label></div>
 						<br />
 						<h3><i class="fas fa-flask"></i> Sample problems</h3>
 							<ul class="samples-list">
@@ -55,12 +54,11 @@ foreach(scandir("sample") as $f)
 			<div id="result">
 <?php
 $options = "";
-if(isset($_POST["info"])) $options .= " -i";
-if(isset($_POST["time"])) $options .= " -t";
+if(isset($_POST["st"])) $options .= " -st";
 $f = fopen("sat.cnf", "w");
 fwrite($f, $_POST["problem"]);
 fclose($f);
-$result = shell_exec("timeout 3s ./sat sat.cnf $options");
+$result = shell_exec("timeout 3s ./sat$options sat.cnf");
 if($result)
 	echo "<p>" . str_replace("\n", "</p><p>", $result) . "</p>";
 else
