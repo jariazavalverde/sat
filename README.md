@@ -40,7 +40,7 @@ p cnf 3 2
 ```
 **Reference:** [https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html](https://people.sc.fsu.edu/~jburkardt/data/cnf/cnf.html)
 
-## Example
+#### Example
 
 ```shell
 $ ./sat "sample/parity/par8-1-c.cnf" -t -i
