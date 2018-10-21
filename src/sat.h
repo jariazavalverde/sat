@@ -3,7 +3,7 @@
  * FILENAME: sat.h
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 20.10.2018
+ * UPDATED: 21.10.2018
  * 
  *H*/
 
@@ -72,7 +72,13 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace);
   * a new clause implied by two clauses containing complementary
   * literals. This function applies the resolution rule over the clauses
   * $clause_a and $clause_b. The first clause, $clause_a, is also used
-  * as the resolvent of the resolution. 
+  * as the result of the resolution. The pointer $ptr is the reference
+  * to the literal used as resolvent, and is updated to the previous
+  * literal node pointed by $ptr. New literals are added at the
+  * beginning of the list of literals of $clause_a, so, literals of
+  * $clause_a can be iterated from the last of them to the first in a
+  * single loop, ini order to resolve all literals in the decision
+  * level.
   * 
   **/
 void cdcl_resolution(Clause *clause_a, Clause *clause_b, LiteralNode **ptr);
