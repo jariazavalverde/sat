@@ -12,7 +12,7 @@ gcc -I/usr/include -L/usr/lib main.c io.h io.c structures.c structures.h sat.h s
 $ ./sat [options] file
 ```
 
-* **-st** - dispaly statistics.
+* **-st** - display statistics.
 
 #### DIMACS CNF file format
 
