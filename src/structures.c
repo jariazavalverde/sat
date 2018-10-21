@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Operations with structures for SAT problem
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 20.10.2018
+ * UPDATED: 21.10.2018
  * 
  *H*/
 
@@ -29,10 +29,11 @@ Formula *formula_alloc(int nbvar, int nbclauses) {
 	F->lst_clauses = NULL;
 	F->lst_unit_clauses = NULL;
 	F->length = nbclauses;
-	F->size = nbclauses;
+	F->nbclauses = nbclauses;
+	F->nbclauses_learnt = 0;
 	F->original_size = nbclauses;
 	F->alloc_size = nbclauses;
-	F->variables = nbvar;
+	F->nbvar = nbvar;
 	for(i = 0; i < nbclauses; i++) {
 		F->arr_clauses[i] = NULL;
 		F->arr_unit_clauses[i] = NULL;
@@ -109,13 +110,13 @@ void formula_free(Formula *F) {
 	int i;
 	// Free clause nodes
 	ClauseNode *clause_node, *next;
-	for(i = 0; i < F->size; i++) {
+	for(i = 0; i < F->nbclauses; i++) {
 		clause_free(F->arr_clauses[i]->clause);
 		free(F->arr_clauses[i]);
 		free(F->arr_unit_clauses[i]);
 	}
 	// Free clause nodes from occurrences
-	for(i = 0; i < F->variables; i++) {
+	for(i = 0; i < F->nbvar; i++) {
 		clause_node = F->occurrences[i];
 		while(clause_node != NULL) {
 			next = clause_node->next;
@@ -200,7 +201,7 @@ void graph_free(Graph *G) {
   * 
   **/
 void formula_append_clause(Formula *F, Clause *clause) {
-	int size = F->size;
+	int size = F->nbclauses;
 	ClauseNode *clause_node, *unit_clause;
 	clause_node = malloc(sizeof(ClauseNode));
 	unit_clause = malloc(sizeof(ClauseNode));
@@ -213,10 +214,10 @@ void formula_append_clause(Formula *F, Clause *clause) {
 	unit_clause->next = NULL;
 	unit_clause->prev = NULL;
 	// Increment size and length
-	F->size++;
+	F->nbclauses++;
 	F->length++;
 	// Reallocate formula if needed
-	if(F->size > F->alloc_size) {
+	if(F->nbclauses > F->alloc_size) {
 		F->alloc_size += F->original_size;
 		F->arr_clauses = realloc(F->arr_clauses, F->alloc_size * sizeof(ClauseNode*));
 		F->arr_unit_clauses = realloc(F->arr_unit_clauses, F->alloc_size * sizeof(ClauseNode*));

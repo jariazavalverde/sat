@@ -59,10 +59,11 @@ typedef struct Formula {
 	ClauseNode **arr_clauses;	    // Array of clauses
 	ClauseNode *lst_clauses;	    // Linked-list of clauses
 	int length;				        // Number of clauses in the list
-	int size;					    // Total number of clauses
+	int nbclauses;					// Total number of clauses
 	int original_size;			    // Original size
 	int alloc_size;			        // Number of clauses allocated
-	int variables;				    // Number of unique variables
+	int nbvar;				        // Number of unique variables
+	int nbclauses_learnt;           // Total number of learnt clauses
 	int *sat_clauses;			    // Satisfiable clauses
 	ClauseNode **arr_unit_clauses;  // Array of unit clauses
 	ClauseNode *lst_unit_clauses;   // Linked-list of unit clauses

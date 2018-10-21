@@ -3,7 +3,7 @@
  * FILENAME: main.c
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 20.10.2018
+ * UPDATED: 21.10.2018
  * COMPILING: gcc -I/usr/include -L/usr/lib main.c io.h io.c structures.c structures.h sat.h sat.c -o sat
  * 
  *H*/
@@ -45,8 +45,8 @@ int main(int argc, char **argv) {
 			// Show information
 			if(op_info) {
 				formula_printf(F);
-				printf("\nNumber of clauses: %d\n", F->length);
-				printf("Number of variables: %d\n", F->variables);
+				printf("\nNumber of clauses: %d\n", F->nbclauses);
+				printf("Number of variables: %d\n", F->nbvar);
 			}
 			begin = clock();
 			// Check satisfiability

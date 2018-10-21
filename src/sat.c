@@ -27,8 +27,8 @@ int formula_check_sat(Formula *F) {
 	Clause *clause;
 	Trace *trace;
 	// Initialize structures
-	trace = trace_alloc(F->variables);
-	G = graph_alloc(F->variables);
+	trace = trace_alloc(F->nbvar);
+	G = graph_alloc(F->nbvar);
 	// Unit propagation
 	if(cdcl_unit_propagation(F, G, trace) == 0)
 		return 0;
@@ -187,8 +187,8 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	LiteralNode *literal_node;
 	int i, level;
 	// Initilize clause
-	clause = clause_alloc(F->variables);
-	clause->id = F->size;
+	clause = clause_alloc(F->nbvar);
+	clause->id = F->nbclauses;
 	// Get conflictive clause and decision level
 	level = G->nodes[G->size]->level;
 	cdcl_resolution(clause, G->nodes[G->size]->antecedents, NULL);
@@ -206,6 +206,7 @@ Clause *cdcl_analyze_conflict(Formula *F, Graph *G, Trace *trace) {
 	clause->literals = malloc(clause->size * sizeof(int));
 	// Append clause to the formula
 	formula_append_clause(F, clause);
+	F->nbclauses_learnt++;
 	// Update occurrence nodes and trace
 	for(i = 0; i < clause->size; i++) {
 		literal_node = clause->lst_literals;

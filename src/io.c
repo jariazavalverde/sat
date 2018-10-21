@@ -3,7 +3,7 @@
  * FILENAME: io.c
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 20.10.2018
+ * UPDATED: 21.10.2018
  * 
  *H*/
 
@@ -168,7 +168,7 @@ void literal_printf(Atom atom, Literal literal) {
 void formula_printf_interpretation(Formula *F) {
 	int i;
 	Bool value;
-	for(i = 0; i < F->variables; i++) {
+	for(i = 0; i < F->nbvar; i++) {
 		value = F->interpretation[i];
 		if(value == TRUE)
 			printf("%d ", i+1);
