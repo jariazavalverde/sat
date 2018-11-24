@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Operations with structures for SAT problem
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 21.10.2018
+ * UPDATED: 24.11.2018
  * 
  *H*/
 
@@ -89,23 +89,6 @@ Trace *trace_alloc(int nbvar) {
 
 /**
   * 
-  * This function creates an implication graph of $nbvar variables,
-  * returning a pointer to a newly initialized Graph struct.
-  * 
-  **/
-Graph *graph_alloc(int nbvar) {
-	int i;
-	Graph *G = malloc(sizeof(Graph));
-	G->nodes = malloc((nbvar+1) * sizeof(GraphNode));
-	G->size = nbvar;
-	G->decision_level = 0;
-	for(i = 0; i <= nbvar; i++)
-		G->nodes[i] = NULL;
-	return G;
-}
-
-/**
-  * 
   * This function frees a previously allocated formula $F.
   * The clause nodes underlying the formula will also be deallocated.
   * 
@@ -177,25 +160,6 @@ void trace_free(Trace *trace) {
 	free(trace->decisions);
 	// Free trace
 	free(trace);
-}
-
-/**
-  * 
-  * This function frees a previously allocated graph $G.
-  * The graph nodes underlying the trace will also be deallocated.
-  * Clause nodes underlying the graph nodes will not be deallocated.
-  * 
-  **/
-void graph_free(Graph *G) {
-	int i;
-	// Free graph nodes
-	for(i = 0; i <= G->size; i++)
-		if(G->nodes[i] != NULL)
-			free(G->nodes[i]);
-	// Free arrays
-	free(G->nodes);
-	// Free graph
-	free(G);
 }
 
 /**
@@ -432,26 +396,4 @@ void trace_append(Trace *trace, Clause *clause, Atom atom, Literal literal) {
 		if(clause == NULL)
 			trace->decisions[atom] = node;
 	}
-}
-
-/**
-  * 
-  * This function sets the value of the $atom-th node of a graph.
-  * If the $decision is CONFLICTIVE, the node is set in the last
-  * position of the array of nodes (the implication graph can only
-  * have at most one CONFLICTIVE node). If there is a previous node
-  * in the same index, it will not be deallocated.
-  * 
-  **/
-void graph_set_node(Graph *G, Atom atom, Bool value, int level, Decision decision, Clause *clause) {
-	int index = decision == CONFLICTIVE ? G->size : atom;
-	int i, degree = clause == NULL || decision == ARBITRARY ? 0 : clause->size;
-	GraphNode *node = malloc(sizeof(GraphNode));
-	G->nodes[index] = node;
-	node->atom = atom;
-	node->value = value;
-	node->decision = decision;
-	node->degree = degree;
-	node->level = level;
-	node->antecedents = clause;
 }

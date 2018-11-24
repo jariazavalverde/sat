@@ -3,8 +3,8 @@
  * FILENAME: main.c
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 21.10.2018
- * COMPILING: gcc -I/usr/include -L/usr/lib main.c io.h io.c structures.c structures.h sat.h sat.c -o sat
+ * UPDATED: 24.11.2018
+ * COMPILING: gcc -I/usr/include -L/usr/lib main.c io.h io.c structures.c structures.h cdcl.h cdcl.c sat.h sat.c -o sat
  * 
  *H*/
 

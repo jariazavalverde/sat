@@ -1,6 +1,7 @@
 src/sat
 test/sat
 test/sat.log
+local/
 
 # Prerequisites
 *.d

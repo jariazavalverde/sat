@@ -3,11 +3,9 @@
  * FILENAME: structures.h
  * DESCRIPTION: Data structures for SAT problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 20.10.2018
+ * UPDATED: 24.11.2018
  * 
  *H*/
-
-
 
 #include <stdlib.h>
 
@@ -91,22 +89,6 @@ typedef struct Trace {
 	int length;				        // Number of nodes
 } Trace;
 
-/** Data structures for implication graphs */
-typedef struct GraphNode {
-	Atom atom;					    // Atom of the node
-	Bool value;				        // Value for the atom
-	Decision decision;			    // Kind of decision
-	int level;					    // Decision level
-	Clause *antecedents;		    // Array of antecedent nodes of the node
-	int degree;				        // Number of antecedents
-} GraphNode;
-
-typedef struct Graph {
-	GraphNode **nodes;			    // Nodes of the graph
-	int size;					    // Maximum number of nodes
-	int decision_level;		        // Current decision level
-} Graph;
-
 
 
 #endif
@@ -139,14 +121,6 @@ Trace *trace_alloc(int nbvar);
 
 /**
   * 
-  * This function creates an implication graph of $nbvar variables,
-  * returning a pointer to a newly initialized Graph struct.
-  * 
-  **/
-Graph *graph_alloc(int nbvar);
-
-/**
-  * 
   * This function frees a previously allocated formula $F.
   * The clause nodes underlying the formula will also be deallocated.
   * 
@@ -169,15 +143,6 @@ void clause_free(Clause *clause);
   * 
   **/
 void trace_free(Trace *trace);
-
-/**
-  * 
-  * This function frees a previously allocated graph $G.
-  * The graph nodes underlying the trace will also be deallocated.
-  * Clause nodes underlying the graph nodes will not be deallocated.
-  * 
-  **/
-void graph_free(Graph *G);
 
 /**
   * 
@@ -260,14 +225,3 @@ void trace_push(Trace *trace, Clause *clause, Atom atom, Literal literal);
   * 
   **/
 void trace_append(Trace *trace, Clause *clause, Atom atom, Literal literal);
-
-/**
-  * 
-  * This function sets the value of the $atom-th node of a graph.
-  * If the $decision is CONFLICTIVE, the node is set in the last
-  * position of the array of nodes (the implication graph can only
-  * have at most one CONFLICTIVE node). If there is a previous node
-  * in the same index, it will not be deallocated.
-  * 
-  **/
-void graph_set_node(Graph *G, Atom atom, Bool value, int level, Decision decision, Clause *clause);
