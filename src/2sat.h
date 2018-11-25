@@ -3,7 +3,7 @@
  * FILENAME: 2sat.h
  * DESCRIPTION: 2-satisfiability algorithm
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 24.11.2018
+ * UPDATED: 25.11.2018
  * 
  *H*/
 
@@ -51,9 +51,30 @@ SAT2_Graph *sat2_graph_alloc(int nbvar);
 void sat2_graph_free(SAT2_Graph *G);
 
 /**
- * 
- * This function adds a new adjacent ($atom_to, $lit_to) to the
- * element ($atom_from, $lit_from) of the graph $G.
- *  
- **/
+  * 
+  * This function adds a new adjacent ($atom_to, $lit_to) to the
+  * element ($atom_from, $lit_from) of the graph $G.
+  *  
+  **/
 void sat2_graph_add_adjacent(SAT2_Graph *G, Atom atom_from, Literal lit_from, Atom atom_to, Literal lit_to);
+
+/**
+  * 
+  * This function checks the satisfiability of the formula $F,
+  * following the Apswall algorithm for 2-SAT problem. If $F is
+  * satisfiable, the function returns 1 and the interpretation for
+  * $F is set in $F->interpretation. Otherwise, the function returns 0.
+  * 
+  **/
+int sat2_check_sat(Formula *F);
+
+/**
+  * 
+  * This function returns a pointer to the graph representing the 
+  * formula $F in implicative normal form. For each variable x there
+  * will be two vertices v_x and v_{\neg x}. The edges will correspond
+  * to the implications.
+  *  
+  **/
+SAT2_Graph *sat2_implicative_normal_form(Formula *F);
+

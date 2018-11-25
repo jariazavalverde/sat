@@ -3,7 +3,7 @@
  * FILENAME: cdcl.c
  * DESCRIPTION: Conflict-driven clause learning algorithm
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 24.11.2018
+ * UPDATED: 25.11.2018
  * 
  *H*/
 
@@ -70,7 +70,7 @@ void cdcl_graph_set_node(CDCL_Graph *G, Atom atom, Bool value, int level, Decisi
   * 
   * This function checks the satisfiability of the formula $F,
   * following the Conflict-driven clause learning algorithm. If $F
-  * is satisfiable, the functions returns 1 and the interpretation for
+  * is satisfiable, the functions return 1 and the interpretation for
   * $F is set in $F->interpretation. Otherwise, the function returns 0.
   * The original formula $F can be modified by assertion or retraction
   * of clauses and literals, or by addition of new clauses.

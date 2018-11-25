@@ -397,3 +397,17 @@ void trace_append(Trace *trace, Clause *clause, Atom atom, Literal literal) {
 			trace->decisions[atom] = node;
 	}
 }
+
+/**
+  * 
+  * This function returns the negation of the literal $literal.
+  * 
+  **/
+Literal literal_not(Literal literal) {
+	if(literal == POSITIVE)
+		return NEGATIVE;
+	else if(literal == NEGATIVE)
+		return POSITIVE;
+	else
+		return literal;
+}

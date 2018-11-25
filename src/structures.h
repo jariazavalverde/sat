@@ -225,3 +225,11 @@ void trace_push(Trace *trace, Clause *clause, Atom atom, Literal literal);
   * 
   **/
 void trace_append(Trace *trace, Clause *clause, Atom atom, Literal literal);
+
+
+/**
+  * 
+  * This function returns the negation of the literal $literal.
+  * 
+  **/
+Literal literal_not(Literal literal);
