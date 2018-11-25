@@ -29,7 +29,7 @@ typedef enum {UNKNOWN = -1, FALSE = 0, TRUE = 1} Bool;
 typedef enum {CNF, CNF_2, CNF_HORN} Problem;
 
 /** Possible algorithms */
-typedef enum {AUTO, CDCL, APSWALL} Algorithm;
+typedef enum {AUTO, CDCL, APSVALL} Algorithm;
 
 /** Possible kinds of nodes in implication graphs */
 typedef enum {ARBITRARY, FORCED, CONFLICTIVE} Decision;

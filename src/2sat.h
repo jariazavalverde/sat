@@ -69,7 +69,7 @@ SAT2_Graph *sat2_graph_transpose(SAT2_Graph *G);
 /**
   * 
   * This function checks the satisfiability of the formula $F,
-  * following the Apswall algorithm for 2-SAT problem. If $F is
+  * following the Apsvall algorithm for 2-SAT problem. If $F is
   * satisfiable, the function returns 1 and the interpretation for
   * $F is set in $F->interpretation. Otherwise, the function returns 0.
   * 

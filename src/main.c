@@ -32,8 +32,8 @@ int main(int argc, char **argv) {
 			op_stats = 1;
 		else if(strcmp(argv[i], "-cdcl") == 0)
 			op_algorithm = CDCL;
-		else if(strcmp(argv[i], "-apswall") == 0)
-			op_algorithm = APSWALL;
+		else if(strcmp(argv[i], "-apsvall") == 0)
+			op_algorithm = APSVALL;
 	}
 	// Read formula
 	stream = fopen(argv[argc-1], "r");

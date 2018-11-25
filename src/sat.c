@@ -22,7 +22,7 @@ int formula_check_sat(Formula *F, Algorithm algorithm) {
 	clock_t begin, end;
 	int sat;
 	begin = clock();
-	if(F->problem == CNF_2 && (algorithm == APSWALL || algorithm == AUTO))
+	if(F->problem == CNF_2 && (algorithm == APSVALL || algorithm == AUTO))
 		sat = sat2_check_sat(F);
 	else
 		sat = cdcl_check_sat(F);

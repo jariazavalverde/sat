@@ -88,7 +88,7 @@ SAT2_Graph *sat2_graph_transpose(SAT2_Graph *G) {
 /**
   * 
   * This function checks the satisfiability of the formula $F,
-  * following the Apswall algorithm for 2-SAT problem. If $F is
+  * following the Apsvall algorithm for 2-SAT problem. If $F is
   * satisfiable, the function returns 1 and the interpretation for
   * $F is set in $F->interpretation. Otherwise, the function returns 0.
   * 
@@ -99,8 +99,6 @@ int sat2_check_sat(Formula *F) {
 	SAT2_Graph *G = sat2_implicative_normal_form(F);
 	// Get strongly connected components
 	int *components = sat2_kosaraju(G);
-	// Get topological order of components
-	//int *order = sat2_topological_order(G, components);
 	// Assign values (decision)
 	for(i = 0; i < F->nbvar; i++) {
 		if(components[i] == components[i + F->nbvar]) {
@@ -160,8 +158,9 @@ int *sat2_kosaraju(SAT2_Graph *G) {
 	for(i = 0; i < G->nb_nodes; i++)
 		list = sat2_kosaraju_visit(G, list, visited, i);
 	free(visited);
+	i = 0;
 	while(list != NULL) {
-		sat2_kosaraju_assign(Gt, components, list->node, list->node);
+		sat2_kosaraju_assign(Gt, components, list->node, i++);
 		node = list;
 		list = list->next;
 		free(node);
