@@ -68,6 +68,25 @@ void sat2_graph_add_adjacent(SAT2_Graph *G, Atom atom_from, Literal lit_from, At
 
 /**
   * 
+  * This function returns the transpose graph of the direct graph $G.
+  *  
+  **/
+SAT2_Graph *sat2_graph_transpose(SAT2_Graph *G) {
+	int i;
+	SAT2_Node *adjacent;
+	SAT2_Graph *Gt = sat2_graph_alloc(G->nbvar);
+	for(i = 0; i < G->nb_nodes; i++) {
+		adjacent = G->adjacents[i];
+		while(adjacent != NULL) {
+			sat2_graph_add_adjacent(Gt, adjacent->node, POSITIVE, i, POSITIVE);
+			adjacent = adjacent->next;
+		}
+	}
+	return Gt;
+}
+
+/**
+  * 
   * This function checks the satisfiability of the formula $F,
   * following the Apswall algorithm for 2-SAT problem. If $F is
   * satisfiable, the function returns 1 and the interpretation for
@@ -75,15 +94,27 @@ void sat2_graph_add_adjacent(SAT2_Graph *G, Atom atom_from, Literal lit_from, At
   * 
   **/
 int sat2_check_sat(Formula *F) {
+	int i;
 	// Construct graph
 	SAT2_Graph *G = sat2_implicative_normal_form(F);
 	// Get strongly connected components
 	int *components = sat2_kosaraju(G);
+	// Get topological order of components
+	//int *order = sat2_topological_order(G, components);
+	// Assign values (decision)
+	for(i = 0; i < F->nbvar; i++) {
+		if(components[i] == components[i + F->nbvar]) {
+			F->nb_conflicts++;
+			return 0;
+		}
+		F->nb_decisions++;
+		F->interpretation[i] = components[i] > components[i + F->nbvar];
+	}
 	// Free structures
 	free(components);
 	sat2_graph_free(G);
 	// Return result
-	return 0;
+	return 1;
 }
 
 /**
@@ -118,7 +149,8 @@ SAT2_Graph *sat2_implicative_normal_form(Formula *F) {
   **/
 int *sat2_kosaraju(SAT2_Graph *G) {
 	int i, *visited, *components;
-	SAT2_Node *list;
+	SAT2_Node *list = NULL, *node;
+	SAT2_Graph *Gt = sat2_graph_transpose(G);
 	visited = malloc(G->nb_nodes * sizeof(int));
 	components = malloc(G->nb_nodes * sizeof(int));
 	for(i = 0; i < G->nb_nodes; i++) {
@@ -127,11 +159,14 @@ int *sat2_kosaraju(SAT2_Graph *G) {
 	}
 	for(i = 0; i < G->nb_nodes; i++)
 		list = sat2_kosaraju_visit(G, list, visited, i);
-	while(list != NULL) {
-		sat2_kosaraju_assign(G, components, list->node, list->node);
-		list = list->next;
-	}
 	free(visited);
+	while(list != NULL) {
+		sat2_kosaraju_assign(Gt, components, list->node, list->node);
+		node = list;
+		list = list->next;
+		free(node);
+	}
+	sat2_graph_free(Gt);
 	return components;
 }
 
@@ -169,6 +204,7 @@ void sat2_kosaraju_assign(SAT2_Graph *G, int *components, int u, int root) {
 	SAT2_Node *adjacent;
 	if(components[u] == -1) {
 		components[u] = root;
+		adjacent = G->adjacents[u];
 		while(adjacent != NULL) {
 			sat2_kosaraju_assign(G, components, adjacent->node, root);
 			adjacent = adjacent->next;

@@ -61,6 +61,13 @@ void sat2_graph_add_adjacent(SAT2_Graph *G, Atom atom_from, Literal lit_from, At
 
 /**
   * 
+  * This function returns the transpose graph of the direct graph $G.
+  *  
+  **/
+SAT2_Graph *sat2_graph_transpose(SAT2_Graph *G);
+
+/**
+  * 
   * This function checks the satisfiability of the formula $F,
   * following the Apswall algorithm for 2-SAT problem. If $F is
   * satisfiable, the function returns 1 and the interpretation for
