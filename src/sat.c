@@ -3,7 +3,7 @@
  * FILENAME: sat.h
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 24.11.2018
+ * UPDATED: 25.11.2018
  * 
  *H*/
 
@@ -18,11 +18,14 @@
   * $F is set in $F->interpretation. Otherwise, the function returns 0.
   *  
   **/
-int formula_check_sat(Formula *F) {
+int formula_check_sat(Formula *F, Algorithm algorithm) {
 	clock_t begin, end;
 	int sat;
 	begin = clock();
-	sat = cdcl_check_sat(F);
+	if(F->problem == CNF_2 && (algorithm == APSWALL || algorithm == AUTO))
+		sat = sat2_check_sat(F);
+	else
+		sat = cdcl_check_sat(F);
 	end = clock();
 	F->execution_time = (double)(end - begin) / CLOCKS_PER_SEC;
 	return sat;

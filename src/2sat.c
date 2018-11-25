@@ -36,9 +36,9 @@ SAT2_Graph *sat2_graph_alloc(int nbvar) {
   * 
   **/
 void sat2_graph_free(SAT2_Graph *G) {
-	int i;
+	int i, nodes = G->nbvar * 2;
 	SAT2_Node *node, *next;
-	for(i = 0; i <= G->size; i++) {
+	for(i = 0; i < nodes; i++) {
 		node = G->adjacents[i];
 		while(node != NULL) {
 			next = node->next;
@@ -51,11 +51,11 @@ void sat2_graph_free(SAT2_Graph *G) {
 }
 
 /**
- * 
- * This function adds a new adjacent ($atom_to, $lit_to) to the
- * element ($atom_from, $lit_from) of the graph $G.
- *  
- **/
+  * 
+  * This function adds a new adjacent ($atom_to, $lit_to) to the
+  * element ($atom_from, $lit_from) of the graph $G.
+  *  
+  **/
 void sat2_graph_add_adjacent(SAT2_Graph *G, Atom atom_from, Literal lit_from, Atom atom_to, Literal lit_to) {
 	int index_from = lit_from == NEGATIVE ? G->nbvar + atom_from : atom_from;
 	int index_to = lit_to == NEGATIVE ? G->nbvar + atom_to : atom_to;

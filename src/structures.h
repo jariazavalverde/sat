@@ -3,7 +3,7 @@
  * FILENAME: structures.h
  * DESCRIPTION: Data structures for SAT problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 24.11.2018
+ * UPDATED: 25.11.2018
  * 
  *H*/
 
@@ -24,6 +24,12 @@ typedef enum {NONE = -1, NEGATIVE = 0, POSITIVE = 1, BOTH = 2} Literal;
 
 /** Boolean values */
 typedef enum {UNKNOWN = -1, FALSE = 0, TRUE = 1} Bool;
+
+/** Possible kinds of formulas */
+typedef enum {CNF, CNF_2, CNF_HORN} Problem;
+
+/** Possible algorithms */
+typedef enum {AUTO, CDCL, APSWALL} Algorithm;
 
 /** Possible kinds of nodes in implication graphs */
 typedef enum {ARBITRARY, FORCED, CONFLICTIVE} Decision;
@@ -67,6 +73,7 @@ typedef struct Formula {
 	int *unit;                      // Array of identifiers of unit clauses
 	ClauseNode **occurrences;	    // Clauses where occurs each variable
 	Bool *interpretation;		    // Array of values for interpretation
+	Problem problem;                // Type of problem (CNF, 2-CNF, HORN-CNF, ...)
 	int nb_learnt_clauses;          // Total number of learnt clauses
 	int nb_decisions;               // Total number of decisions
 	int nb_propagations;            // Total number of unit propagations

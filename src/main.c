@@ -3,8 +3,8 @@
  * FILENAME: main.c
  * DESCRIPTION: Boolean satisfiability problem in CNF
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 24.11.2018
- * COMPILING: gcc -I/usr/include -L/usr/lib main.c io.h io.c structures.c structures.h cdcl.h cdcl.c sat.h sat.c -o sat
+ * UPDATED: 25.11.2018
+ * COMPILING: gcc -I/usr/include -L/usr/lib main.c io.h io.c structures.c structures.h cdcl.h cdcl.c 2sat.h 2sat.c sat.h sat.c -o sat
  * 
  *H*/
 
@@ -19,7 +19,7 @@
 int main(int argc, char **argv) {
 	FILE *stream;
 	double time_spent;
-	int i, sat, op_stats = 0;
+	int i, sat, op_stats = 0, op_algorithm = AUTO;
 	Formula *F;
 	// Check minimum number of arguments
 	if(argc < 2) {
@@ -30,6 +30,10 @@ int main(int argc, char **argv) {
 	for(i = 1; i < argc-1; i++) {
 		if(strcmp(argv[i], "-st") == 0)
 			op_stats = 1;
+		else if(strcmp(argv[i], "-cdcl") == 0)
+			op_algorithm = CDCL;
+		else if(strcmp(argv[i], "-apswall") == 0)
+			op_algorithm = APSWALL;
 	}
 	// Read formula
 	stream = fopen(argv[argc-1], "r");
@@ -40,7 +44,7 @@ int main(int argc, char **argv) {
 		// Formula is ok
 		if(F != NULL) {
 			// Check satisfiability
-			sat = formula_check_sat(F);
+			sat = formula_check_sat(F, op_algorithm);
 			// Show SAT result
 			printf(sat ? "sat\n" : "unsat\n");
 			if(sat)

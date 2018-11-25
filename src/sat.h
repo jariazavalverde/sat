@@ -9,6 +9,7 @@
 
 #include <time.h>
 #include "cdcl.h"
+#include "2sat.h"
 
 
 
@@ -19,4 +20,4 @@
   * $F is set in $F->interpretation. Otherwise, the function returns 0.
   *  
   **/
-int formula_check_sat(Formula *F);
+int formula_check_sat(Formula *F, Algorithm algorithm);

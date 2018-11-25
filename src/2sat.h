@@ -19,7 +19,7 @@
 /** Data structures for implication graphs in 2-SAT */
 typedef struct SAT2_Node {
 	int node;                       // Adjacent to
-	struct SAT2_Node next;          // Next node
+	struct SAT2_Node *next;         // Next node
 } SAT2_Node;
 
 typedef struct SAT2_Graph {

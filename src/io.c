@@ -3,7 +3,7 @@
  * FILENAME: io.c
  * DESCRIPTION: Read propositional formulas in DIMACS format
  * AUTHORS: José Antonio Riaza Valverde
- * UPDATED: 21.10.2018
+ * UPDATED: 25.11.2018
  * 
  *H*/
 
@@ -20,7 +20,7 @@
   **/
 Formula *formula_fread_dimacs(FILE *stream) {
 	Formula *F;
-	int i, j, length, var, nbvar, nbclauses;
+	int i, j, length, var, nbvar, nbclauses, cnf_2 = 1;
 	char ch;
 	Atom atom;
 	Clause *clause;
@@ -84,6 +84,9 @@ Formula *formula_fread_dimacs(FILE *stream) {
 			}
 			fgetc(stream); // read space
 		}
+		// Check 2-SAT
+		cnf_2 = cnf_2 && length == 2;
+		// Fill clause
 		clause->length = length;
 		clause->size = length;
 		clause->literals = malloc(length * sizeof(int));
@@ -111,6 +114,11 @@ Formula *formula_fread_dimacs(FILE *stream) {
 			last_clause_node->next = clause_node;
 		fgetc(stream); // read break line
 	}
+	// Set type of problem
+	if(cnf_2)
+		F->problem = CNF_2;
+	else
+		F->problem = CNF;
 	// Return the formula
 	return F;
 }
