@@ -18,13 +18,14 @@
 
 /** Data structures for implication graphs in 2-SAT */
 typedef struct SAT2_Node {
-	int node;                       // Adjacent to
+	int node;                       // Element
 	struct SAT2_Node *next;         // Next node
 } SAT2_Node;
 
 typedef struct SAT2_Graph {
 	SAT2_Node **adjacents;	        // Adjacency lists
 	int nbvar;					    // Number of variables
+	int nb_nodes;                   // Number of nodes
 } SAT2_Graph;
 
 
@@ -78,3 +79,28 @@ int sat2_check_sat(Formula *F);
   **/
 SAT2_Graph *sat2_implicative_normal_form(Formula *F);
 
+/**
+  * 
+  * This function returns a pointer to the array of components of the
+  * graph $G, following the Kosaraju's algorithm to find the strongly
+  * connected components.
+  *  
+  **/
+int *sat2_kosaraju(SAT2_Graph *G);
+
+/**
+  * 
+  * This function visits the adjacent nodes of the node $u of the graph
+  * $G, and marks it as visited in the array $visited. This function
+  * returns a pointer to the visited node, followed by the node $list.
+  *  
+  **/
+SAT2_Node *sat2_kosaraju_visit(SAT2_Graph *G, SAT2_Node *list, int *visited, int u);
+
+/**
+  * 
+  * This function assigns the strongly connected component to each node
+  * of the graph $G in the array $components.
+  *  
+  **/
+void sat2_kosaraju_assign(SAT2_Graph *G, int *components, int u, int root);

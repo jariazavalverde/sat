@@ -21,9 +21,10 @@ SAT2_Graph *sat2_graph_alloc(int nbvar) {
 	int i;
 	int nodes = nbvar * 2;
 	SAT2_Graph *G = malloc(sizeof(SAT2_Graph));
-	G->adjacents = malloc(nodes * sizeof(SAT2_Node));
+	G->adjacents = malloc(nodes * sizeof(SAT2_Node*));
 	G->nbvar = nbvar;
-	for(i = 0; i <= nodes; i++)
+	G->nb_nodes = nodes;
+	for(i = 0; i < nodes; i++)
 		G->adjacents[i] = NULL;
 	return G;
 }
@@ -36,9 +37,9 @@ SAT2_Graph *sat2_graph_alloc(int nbvar) {
   * 
   **/
 void sat2_graph_free(SAT2_Graph *G) {
-	int i, nodes = G->nbvar * 2;
+	int i;
 	SAT2_Node *node, *next;
-	for(i = 0; i < nodes; i++) {
+	for(i = 0; i < G->nb_nodes; i++) {
 		node = G->adjacents[i];
 		while(node != NULL) {
 			next = node->next;
@@ -74,8 +75,14 @@ void sat2_graph_add_adjacent(SAT2_Graph *G, Atom atom_from, Literal lit_from, At
   * 
   **/
 int sat2_check_sat(Formula *F) {
+	// Construct graph
 	SAT2_Graph *G = sat2_implicative_normal_form(F);
+	// Get strongly connected components
+	int *components = sat2_kosaraju(G);
+	// Free structures
+	free(components);
 	sat2_graph_free(G);
+	// Return result
 	return 0;
 }
 
@@ -94,10 +101,77 @@ SAT2_Graph *sat2_implicative_normal_form(Formula *F) {
 	SAT2_Graph *G = sat2_graph_alloc(F->nbvar);
 	for(i = 0; i < F->nbclauses; i++) {
 		clause = F->arr_clauses[i]->clause;
-		fst = clause->arr_literals[0];
-		snd = clause->arr_literals[1];
+		fst = clause->arr_literals[clause->literals[0]];
+		snd = clause->arr_literals[clause->literals[1]];
 		sat2_graph_add_adjacent(G, fst->atom, literal_not(fst->literal), snd->atom, snd->literal);
 		sat2_graph_add_adjacent(G, snd->atom, literal_not(snd->literal), fst->atom, fst->literal);
 	}
 	return G;
+}
+
+/**
+  * 
+  * This function returns a pointer to the array of components of the
+  * graph $G, following the Kosaraju's algorithm to find the strongly
+  * connected components.
+  *  
+  **/
+int *sat2_kosaraju(SAT2_Graph *G) {
+	int i, *visited, *components;
+	SAT2_Node *list;
+	visited = malloc(G->nb_nodes * sizeof(int));
+	components = malloc(G->nb_nodes * sizeof(int));
+	for(i = 0; i < G->nb_nodes; i++) {
+		visited[i] = 0;
+		components[i] = -1;
+	}
+	for(i = 0; i < G->nb_nodes; i++)
+		list = sat2_kosaraju_visit(G, list, visited, i);
+	while(list != NULL) {
+		sat2_kosaraju_assign(G, components, list->node, list->node);
+		list = list->next;
+	}
+	free(visited);
+	return components;
+}
+
+/**
+  * 
+  * This function visits the adjacent nodes of the node $u of the graph
+  * $G, and marks it as visited in the array $visited. This function
+  * returns a pointer to the visited node, followed by the node $list.
+  *  
+  **/
+SAT2_Node *sat2_kosaraju_visit(SAT2_Graph *G, SAT2_Node *list, int *visited, int u) {
+	SAT2_Node *adjacent, *node;
+	if(!visited[u]) {
+		visited[u] = 1;
+		adjacent = G->adjacents[u];
+		while(adjacent != NULL) {
+			list = sat2_kosaraju_visit(G, list, visited, adjacent->node);
+			adjacent = adjacent->next;
+		}
+		node = malloc(sizeof(SAT2_Node));
+		node->node = u;
+		node->next = list;
+		return node;
+	}
+	return list;
+}
+
+/**
+  * 
+  * This function assigns the strongly connected component to each node
+  * of the graph $G in the array $components.
+  *  
+  **/
+void sat2_kosaraju_assign(SAT2_Graph *G, int *components, int u, int root) {
+	SAT2_Node *adjacent;
+	if(components[u] == -1) {
+		components[u] = root;
+		while(adjacent != NULL) {
+			sat2_kosaraju_assign(G, components, adjacent->node, root);
+			adjacent = adjacent->next;
+		}
+	}
 }
