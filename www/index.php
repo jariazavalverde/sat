@@ -34,6 +34,12 @@ else if(isset($_POST["problem"]))
 					<div class="column-right"><div>
 						<h3><i class="fas fa-list-alt"></i> Options</h3>
 						<div class="option"><input type="checkbox" name="st" id="st" <?php if(isset($_POST["st"])) echo "checked=\"checked\""; ?> /> <label for="st"><i class="fas fa-clock"></i> Display statistics <span class="legend">(decisions, propagations, execution time, ...)</span></label></div>
+						<div class="option"><input type="checkbox" style="visibility:hidden;" /> <i class="fas fa-search"></i> Algorithm <span class="legend"> </span>
+						<span class="legend"><select name="algorithm" id="algorithm">
+							<option value="auto">Auto</option>
+							<option value="cdcl" <?php if($_POST["algorithm"] == "cdcl") echo "selected=\"selected\""; ?>>Conflict-driven clause learning</option>
+							<option value="apsvall" <?php if($_POST["algorithm"] == "apsvall") echo "selected=\"selected\""; ?>>Apsvall's algorithm for 2-CNF</option>
+						</select></span></div>
 						<br />
 						<h3><i class="fas fa-flask"></i> Sample problems</h3>
 							<ul class="samples-list">
@@ -55,6 +61,8 @@ foreach(scandir("sample") as $f)
 <?php
 $options = "";
 if(isset($_POST["st"])) $options .= " -st";
+if($_POST["algorithm"] == "cdcl") $options .= " -cdcl";
+if($_POST["algorithm"] == "apsvall") $options .= " -apsvall";
 $f = fopen("sat.cnf", "w");
 fwrite($f, $_POST["problem"]);
 fclose($f);
