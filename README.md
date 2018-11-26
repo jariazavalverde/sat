@@ -13,6 +13,8 @@ $ ./sat [options] file
 ```
 
 * **-st** - display statistics.
+* **-cdcl** - use the conflict-driven clause learning algorithm.
+* **-apsvall** - use the Apsvall-Plass-Tarjan algorithm (for 2-CNF instances).
 
 #### DIMACS CNF file format
 
