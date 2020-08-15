@@ -1,6 +1,6 @@
 /*H*
  * 
- * FILENAME: 2sat.h
+ * FILENAME: 2sat.c
  * DESCRIPTION: 2-satisfiability algorithm
  * AUTHORS: José Antonio Riaza Valverde
  * UPDATED: 25.11.2018
